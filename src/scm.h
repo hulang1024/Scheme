@@ -67,8 +67,8 @@ typedef struct {
     scm_object o;
     const char *name;
     scm_prim prim;
-    int minArity;
-    int maxArity;
+    int min_arity;
+    int max_arity;
 } scm_primitive_proc;
 
 typedef struct {
