@@ -2,10 +2,11 @@
 #ifndef SCM_H
 #define SCM_H
 
-typedef short ScmType;
+typedef short scm_type;
 
 enum {
     scm_integer_type,
+    scm_float_type,
     scm_bool_type,
     scm_char_type,
     scm_string_type,
@@ -21,68 +22,74 @@ enum {
 
 typedef struct {
     /* 以一个类型标识的字段开始的都是Scheme对象 */
-    ScmType type;
-} ScmObject;
+    scm_type type;
+} scm_object;
 
 typedef struct {
-    ScmObject o;
+    scm_object o;
     int int_val;
-} ScmInteger;
+} scm_integer;
 
 typedef struct {
-    ScmObject o;
+    scm_object o;
+    float float_val;
+} scm_float;
+
+typedef struct {
+    scm_object o;
     short val;
-} ScmBool;
+} scm_bool;
 
 typedef struct {
-    ScmObject o;
+    scm_object o;
     char char_val;
-} ScmChar;
+} scm_char;
 
 typedef struct {
-    ScmObject o;
+    scm_object o;
     char *char_str_val;
-} ScmString;
+} scm_string;
 
 typedef struct {
-    ScmObject o;
+    scm_object o;
     char *s;
-} ScmSymbol;
+} scm_symbol;
 
 typedef struct {
-    ScmObject o;
-    ScmObject *car;
-    ScmObject *cdr;
-} ScmPair;
+    scm_object o;
+    scm_object *car;
+    scm_object *cdr;
+} scm_pair;
 
-typedef ScmObject *(ScmPrim)(int argc, ScmObject *argv[]);
+typedef scm_object *(scm_prim)(int argc, scm_object *argv[]);
 
 typedef struct {
-    ScmObject o;
+    scm_object o;
     const char *name;
-    ScmPrim prim;
+    scm_prim prim;
     int minArity;
     int maxArity;
-} ScmPrimitiveProc;
+} scm_primitive_proc;
 
 typedef struct {
-    ScmObject o;
+    scm_object o;
     char *name;
-    ScmEnv *env; // for closure
-    ScmObject *body;
-    ScmObject *params;
-    int minArity;
-    int maxArity;
-} ScmCompoundProc;
+    scm_env *env; // for closure
+    scm_object *body;
+    scm_object *params;
+    int min_arity;
+    int max_arity;
+} scm_compound_proc;
 
 
 /* param o: scheme object pointer */
-#define SCM_TYPE(o) (((ScmObject*)(o))->type)
+#define SCM_TYPE(o) (((scm_object*)(o))->type)
 
 /* param a/b: as scheme type */
-#define SCM_SAME_TYPE(a, b) ((ScmType)a == (ScmType)b)
+#define SCM_SAME_TYPE(a, b) ((scm_type)a == (scm_type)b)
 
 #define SCM_INTEGERP(o) (SCM_TYPE(o) == scm_integer_type)
+#define SCM_FLOATP(o) (SCM_TYPE(o) == scm_float_type)
 #define SCM_BOOLP(o) (SCM_TYPE(o) == scm_bool_type)
 #define SCM_CHARP(o) (SCM_TYPE(o) == scm_char_type)
 #define SCM_STRINGP(o) (SCM_TYPE(o) == scm_string_type)
