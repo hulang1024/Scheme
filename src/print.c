@@ -1,66 +1,70 @@
 #include <stdio.h>
 #include "scm.h"
 
-void scm_write_pair(FILE *, scm_object *);
-void scm_write(FILE *, scm_object *);
+void scm_write_pair(scm_object *, scm_object *);
+void scm_write(scm_object *, scm_object *);
 void scm_print(scm_object *);
 
-void scm_write_pair(FILE *stream, scm_object *pair)
+void scm_write_pair(scm_object *port, scm_object *pair)
 {
-    fprintf(stream, "(");
+    FILE* f = ((scm_output_port *)port)->f;// TODO:
+    
+    fprintf(f, "(");
     scm_object *o = pair;
     for(; SCM_PAIRP(o); o = SCM_CDR(o)) {
-        scm_write(stream, SCM_CAR(o));
-        fprintf(stream, " ");;
+        scm_write(f, SCM_CAR(o));
+        fprintf(f, " ");;
     }
-    fprintf(stream, ". ");
-    scm_write(stream, o);
-    fprintf(stream, ")");
+    fprintf(f, ". ");
+    scm_write(f, o);
+    fprintf(f, ")");
 }
 
-void scm_write(FILE *stream, scm_object *obj)
+void scm_write(scm_object *port, scm_object *obj)
 {
+    FILE* f = ((scm_output_port *)port)->f;// TODO:
+    
     switch(SCM_TYPE(obj)) {
         case scm_integer_type:
-            fprintf(stream, "%d", SCM_INT_VAL(obj));
+            fprintf(f, "%d", SCM_INT_VAL(obj));
             break;
         case scm_float_type:
-            fprintf(stream, "%f", SCM_FLOAT_VAL(obj));
+            fprintf(f, "%f", SCM_FLOAT_VAL(obj));
             break;
         case scm_char_type:
-            fprintf(stream, "%c", SCM_CHAR_VAL(obj));
+            fprintf(f, "%c", SCM_CHAR_VAL(obj));
             break;
         case scm_string_type:
-            fprintf(stream, "%s", SCM_CHAR_STR_VAL(obj));
+            fprintf(f, "%s", SCM_CHAR_STR_VAL(obj));
             break;
         case scm_symbol_type:
-            fprintf(stream, "%s", SCM_SYMBOL_STR_VAL(obj));
+            fprintf(f, "%s", SCM_SYMBOL_STR_VAL(obj));
             break;
         case scm_pair_type:
-            scm_write_pair(stream, obj);
+            scm_write_pair(f, obj);
             break;
         case scm_primitive_type:
-            fprintf(stream, "#[procedure:%s]", ((scm_primitive_proc *)obj)->name);
+            fprintf(f, "#[procedure:%s]", ((scm_primitive_proc *)obj)->name);
             break;
         case scm_compound_type:
-            fprintf(stream, "#[procedure:%s]", ((scm_compound_proc *)obj)->name);
+            fprintf(f, "#[procedure:%s]", ((scm_compound_proc *)obj)->name);
             break;
         case scm_namespace_type:
-            fprintf(stream, "#[namespace]");
+            fprintf(f, "#[namespace]");
             break;
         case scm_void_type:
             break;
         default:
             if(SCM_NULLP(obj))
-                fprintf(stream, "()");
+                fprintf(f, "()");
             else if(SCM_BOOLP(obj))
-                fprintf(stream, "#%c", SCM_TRUEP(obj) ? 't' : 'f');
+                fprintf(f, "#%c", SCM_TRUEP(obj) ? 't' : 'f');
     }
 }
 
-void scm_print(scm_object *obj)
+void scm_print(scm_object *port, scm_object *obj)
 {
-    scm_write(stdout, obj);
+    scm_write(port, obj);
 }
 
 void scm_println(scm_object *obj)

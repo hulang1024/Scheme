@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include "scm.h"
 #include <assert.h>
+#include "scm.h"
 
 void test()
 {

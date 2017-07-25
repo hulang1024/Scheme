@@ -14,7 +14,7 @@ scm_object* scm_make_pair(scm_object *car, scm_object *cdr)
     return pair;
 }
 
-scm_object *scm_build_list(int size, scm_object **argv)
+scm_object* scm_build_list(int size, scm_object **argv)
 {
     scm_object *pair = scm_null;
     int i;

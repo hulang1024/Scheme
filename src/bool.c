@@ -19,7 +19,6 @@ int scm_equal(scm_object *x, scm_object *y)
             return SCM_FLOAT_VAL(x) == SCM_FLOAT_VAL(y);
         case scm_char_type:
             return SCM_CHAR_VAL(x) == SCM_CHAR_VAL(y);
-            break;
         case scm_string_type:
             return strcmp(SCM_CHAR_STR_VAL(x), SCM_CHAR_STR_VAL(y)) == 0;
         case scm_symbol_type:
