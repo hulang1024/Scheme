@@ -1,15 +1,19 @@
 #include <string.h>
-#include "scm.h"
+#include "bool.h"
+#include "list.h"
 
-/* scm_true & scm_false are pointers */
-scm_object scm_true[1];
-scm_object scm_false[1];
+void scm_init_bool(scm_env *env)
+{
+    scm_true->type = scm_true_type;
+    scm_false->type = scm_false_type;
+    scm_void->type = scm_void_type;
+}
 
 int scm_equal(scm_object *x, scm_object *y)
 {
     if(!SAME_OBJ(x, y))
         return 0;
-    if(!SCM_SAME_TYPE(SCM_TYPE(x), SCM_TYPE(y)))
+    if(!SCM_SAME_TYPE(SCM_TYPE(x), SCM_TYPE(y))) // types: true, false, null...
         return 0;
     
     switch(SCM_TYPE(x)) {
@@ -26,11 +30,6 @@ int scm_equal(scm_object *x, scm_object *y)
         case scm_pair_type:
             // TODO: equal of pair
             return 0;
-        default:
-            if(SCM_NULLP(x))
-                return 1;
-            else if(SCM_BOOLP(x))
-                return 1;
     }
     return 0;
 }

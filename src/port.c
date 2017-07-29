@@ -1,39 +1,49 @@
-﻿#include <stdio.h>
-#include "scm.h"
+﻿#include "port.h"
 
-typedef struct {
-    scm_object o;
-    FILE *f; // TODO: 不只是文件
-} scm_input_port;
-
-typedef struct {
-    scm_object o;
-    FILE *f;// TODO: 
-} scm_ouput_port;
-
+void scm_init_port(scm_env *env)
+{
+    scm_stdin_port = scm_make_stdin_port();
+    scm_stdout_port = scm_make_stdout_port();
+}
 
 scm_object* scm_make_stdout_port()
 {
-    scm_object *o = scm_malloc_object(sizeof(scm_input_port));
-    o->type = scm_input_port_type;
-    o->f = stdout;
-    return o;
+    scm_object *port = scm_malloc_object(sizeof(scm_output_port));
+    port->type = scm_output_port_type;
+    ((scm_output_port *)port)->f = stdout;
+    return port;
 }
 
 scm_object* scm_make_stdin_port()
 {
-    scm_object *o = scm_malloc_object(sizeof(scm_ouput_port));
-    o->type = scm_output_port_type;
-    o->f = stdin;
-    return o;
+    scm_object *port = scm_malloc_object(sizeof(scm_input_port));
+    port->type = scm_input_port_type;
+    ((scm_input_port *)port)->f = stdin;
+    return port;
 }
 
-int scheme_getc(scm_object* port)
+scm_object* scm_make_file_output_port(FILE *f)
+{
+    scm_object *port = scm_malloc_object(sizeof(scm_output_port));
+    port->type = scm_output_port_type;
+    ((scm_output_port *)port)->f = f;
+    return port;
+}
+
+scm_object* scm_make_file_input_port(FILE *f)
+{
+    scm_object *port = scm_malloc_object(sizeof(scm_input_port));
+    port->type = scm_input_port_type;
+    ((scm_input_port *)port)->f = f;
+    return port;
+}
+
+int scm_getc(scm_object* port)
 {
     return getc( ((scm_input_port *)port)->f );
 }
 
-int scheme_ungetc(scm_object* port)
+int scm_ungetc(int ch, scm_object* port)
 {
-    return ungetc( ((scm_input_port *)port)->f );
+    return ungetc(ch, ((scm_input_port *)port)->f );
 }

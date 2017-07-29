@@ -1,23 +1,32 @@
-﻿#include <stdio.h>
-#include <stdlib.h>
-
-#ifndef SCM_H
+﻿#ifndef SCM_H
 #define SCM_H
+
+#include <stdio.h>
+#include <stdlib.h>
 
 enum {
     scm_integer_type = 1,
     scm_float_type,
-    //scm_bool_type,
+
+    /* bool types */
+    scm_true_type,
+    scm_false_type,
+
     scm_char_type,
     scm_string_type,
+
     scm_symbol_type,
     
     scm_pair_type,
-    //scm_null_type,
+    scm_null_type,
     
     scm_primitive_type,
     scm_compound_type,
-    
+
+    /* port types */
+    scm_input_port_type,
+    scm_output_port_type,
+
     scm_namespace_type,
     scm_void_type
 };
@@ -36,7 +45,7 @@ typedef struct {
 
 typedef struct {
     scm_object o;
-    float float_val;
+    double float_val;
 } scm_float;
 
 typedef struct {
@@ -51,7 +60,7 @@ typedef struct {
 
 typedef struct {
     scm_object o;
-    char *s;
+    const char *s;
 } scm_symbol;
 
 typedef struct {
@@ -70,16 +79,17 @@ typedef struct {
     int max_arity;
 } scm_primitive_proc;
 
+typedef struct _scm_env scm_env;
+
 typedef struct {
     scm_object o;
-    char *name;
-    //scm_env *env; // for closure
+    const char *name;
+    scm_env *env; // for closure
     scm_object *body;
     scm_object *params;
     int min_arity;
     int max_arity;
 } scm_compound_proc;
-
 
 #define SAME_PTR(a, b) ((a) == (b))
 #define NOT_SAME_PTR(a, b) ((a) != (b))
@@ -109,8 +119,9 @@ typedef struct {
 #define SCM_NULLP(o) SAME_OBJ(o, scm_null)
 #define SCM_VOIDP(o) SCM_SAME_TYPE(SCM_TYPE(o), scm_void_type)
 
-#define SCM_PROCEDUREP(o) \
-  (SCM_SAME_TYPE(SCM_TYPE(o), scm_primitive_type) || SCM_SAME_TYPE(SCM_TYPE(o), scm_compound_type))
+#define SCM_PRIMPROCP(o) SCM_SAME_TYPE(SCM_TYPE(o), scm_primitive_type)
+#define SCM_COMPROCP(o) SCM_SAME_TYPE(SCM_TYPE(o), scm_compound_type)
+#define SCM_PROCEDUREP(o) (SCM_PRIMPROCP(o) || SCM_COMPROCP(o))
 #define SCM_NAMESPACEP(o) SCM_SAME_TYPE(SCM_TYPE(o), scm_namespace_type)
 
 /* accessor macros */
@@ -122,7 +133,6 @@ typedef struct {
 
 #define SCM_CAR(o) (((scm_pair *)(o))->car)
 #define SCM_CDR(o) (((scm_pair *)(o))->cdr)
-
 
 /*                      memory management macros                          */
 /* Allocation */

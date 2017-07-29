@@ -4,6 +4,6 @@ set(CMAKE_C_STANDARD 11)
 
 project(scheme)
 
-set(SOURCE_FILES src/scm.h src/number.c src/bool.c src/list.c src/print.c src/main.c)
+set(SOURCE_FILES src/scm.h src/list.c src/bool.c src/number.c src/port.c src/read.c src/print.c src/eval.c src/main.c src/list.h src/port.h src/bool.h src/read.h src/symbol.h src/symbol.c src/eval.h src/print.h src/number.h src/char.h src/char.c src/str.h src/str.c src/env.c)
 
 add_executable(scheme ${SOURCE_FILES})
