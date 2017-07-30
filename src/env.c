@@ -46,6 +46,7 @@ scm_object* scm_env_lookup(scm_env *env, scm_symbol *id)
     }
     scm_print_error(SCM_SYMBOL_STR_VAL(id));
     scm_print_error(": undefined;\n cannot reference undefined identifier\n");
+    scm_throw_error();
     return NULL;
 }
 
