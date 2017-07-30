@@ -11,6 +11,7 @@ enum {
 
 static scm_object* write_prim(int, scm_object *[]);
 static scm_object* display_prim(int, scm_object *[]);
+static scm_object* newline_prim(int, scm_object *[]);
 
 static void write(scm_object *port, scm_object *, int);
 static void write_pair(scm_object *port, scm_object *, int);

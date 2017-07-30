@@ -6,7 +6,7 @@
 
 enum {
     scm_integer_type = 1,
-    scm_float_type,
+    scm_float_type = 2,
 
     /* bool types */
     scm_true_type,

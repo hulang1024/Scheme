@@ -2,7 +2,7 @@
 #include "number.h"
 #include "bool.h"
 #include "env.h"
-#include "scm.h"
+#include "error.h"
 
 static scm_object* pair_p_prim(int, scm_object *[]);
 static scm_object* null_p_prim(int, scm_object *[]);
@@ -25,8 +25,8 @@ void scm_init_list(scm_env *env)
     scm_add_prim(env, "cons", cons_prim, 2, 2);
     scm_add_prim(env, "car", car_prim, 1, 1);
     scm_add_prim(env, "cdr", cdr_prim, 1, 1);
-    scm_add_prim(env, "set-car!", car_prim, 2, 2);
-    scm_add_prim(env, "set-cdr!", cdr_prim, 2, 2);
+    scm_add_prim(env, "set-car!", setcar_prim, 2, 2);
+    scm_add_prim(env, "set-cdr!", setcdr_prim, 2, 2);
     scm_add_prim(env, "list", list_prim, 0, -1);
     scm_add_prim(env, "length", length_prim, 1, 1);
 }
@@ -107,24 +107,34 @@ static scm_object* cons_prim(int argc, scm_object *argv[])
 
 static scm_object* car_prim(int argc, scm_object *argv[])
 {
-    return SCM_CAR(argv[0]);
+    if(SCM_PAIRP(argv[0]))
+        return SCM_CAR(argv[0]);
+    return scm_wrong_contract("car", "pair?", 0, argc, argv);
 }
 
 static scm_object* cdr_prim(int argc, scm_object *argv[])
 {
-    return SCM_CDR(argv[0]);
+    if(SCM_PAIRP(argv[0]))
+        return SCM_CDR(argv[0]);
+    return scm_wrong_contract("cdr", "pair?", 0, argc, argv);
 }
 
 static scm_object* setcar_prim(int argc, scm_object *argv[])
 {
-    SCM_CAR(argv[0]) = argv[1];
-    return scm_void;
+    if(SCM_PAIRP(argv[0])) {
+        SCM_CAR(argv[0]) = argv[1];
+        return scm_void;
+    }
+    return scm_wrong_contract("set-car!", "pair?", 0, argc, argv);
 }
 
 static scm_object* setcdr_prim(int argc, scm_object *argv[])
 {
-    SCM_CDR(argv[0]) = argv[1];
-    return scm_void;
+    if(SCM_PAIRP(argv[0])) {
+        SCM_CDR(argv[0]) = argv[1];
+        return scm_void;
+    }
+    return scm_wrong_contract("set-cdr!", "pair?", 0, argc, argv);
 }
 
 static scm_object* list_prim(int argc, scm_object *argv[])
@@ -134,5 +144,7 @@ static scm_object* list_prim(int argc, scm_object *argv[])
 
 static scm_object* length_prim(int argc, scm_object *argv[])
 {
-    return scm_make_integer(scm_list_length(argv[0]));
+    if(SCM_PAIRP(argv[0]))
+        return scm_make_integer(scm_list_length(argv[0]));
+    return scm_wrong_contract("length", "pair?", 0, argc, argv);
 }

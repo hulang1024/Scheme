@@ -1,6 +1,8 @@
 #include "number.h"
 #include "bool.h"
 #include "env.h"
+#include "error.h"
+#include "scm.h"
 
 static scm_object* number_p_prim(int, scm_object *[]);
 static scm_object* integer_p_prim(int, scm_object *[]);
@@ -16,11 +18,8 @@ static scm_object* gteq_prim(int, scm_object *[]);
 
 void scm_init_number(scm_env *env)
 {
-    scm_int_zero->type = scm_integer_type;
-    SCM_INT_VAL(scm_int_zero) = 0;
-
-    scm_add_prim(env, "number?", number_p_prim, 0, -1);
-    scm_add_prim(env, "integer?", integer_p_prim, 0, -1);
+    scm_add_prim(env, "number?", number_p_prim, 1, 1);
+    scm_add_prim(env, "integer?", integer_p_prim, 1, 1);
 
     scm_add_prim(env, "+", plus_prim, 0, -1);
     scm_add_prim(env, "-", minus_prim, 1, -1);
@@ -60,82 +59,198 @@ static scm_object* integer_p_prim(int argc, scm_object *argv[])
     return SCM_BOOL(SCM_INTEGERP(argv[0]));
 }
 
-static scm_object* plus_prim(int argc, scm_object *argv[])
-{
-    if(argc > 0) {
-        if (SCM_INTEGERP(argv[0]))
-            return scm_make_integer(SCM_INT_VAL(argv[0]) + SCM_INT_VAL(argv[1]));
-        //if(SCM_FALSEP(argv[0]))
-        return scm_make_float(SCM_FLOAT_VAL(argv[0]) + SCM_FLOAT_VAL(argv[1]));
-    } else {
-        return scm_int_zero;
+#define CHECK_AND_GET_MAX_TYPE(op)              \
+    int max_type = scm_integer_type;            \
+    int argi;                                   \
+    for(argi = 0; argi < argc; argi++) {        \
+        switch (argv[argi]->type) {             \
+            case scm_integer_type:              \
+                if(scm_integer_type > max_type) \
+                    max_type = scm_integer_type;\
+                break;                          \
+            case scm_float_type:                \
+                if(scm_float_type > max_type)   \
+                    max_type = scm_float_type;  \
+                break;                          \
+            default:                            \
+                return scm_wrong_contract(#op, "number?", argi, argc, argv);\
+        }                                       \
     }
+
+#define GEN_PLUS_OR_MUL_PRIM_ACCUMULATE(op)     \
+    switch(argv[0]->type) {                     \
+        case scm_integer_type:\
+            ret = SCM_INT_VAL(argv[0]);         \
+            break;                              \
+        case scm_float_type:                    \
+            ret = SCM_FLOAT_VAL(argv[0]);       \
+            break;                              \
+    }                                           \
+    for (argi = 1; argi < argc; argi++) {       \
+        switch (argv[argi]->type) {             \
+            case scm_integer_type:              \
+                ret op##= SCM_INT_VAL(argv[argi]);\
+                break;                          \
+            case scm_float_type:                \
+                ret op##= SCM_FLOAT_VAL(argv[argi]);\
+                break;                          \
+        }                                       \
+    }
+#define GEN_PLUS_OR_MUL_PRIM(op, init) {        \
+    if(argc == 0)                               \
+        return scm_make_integer(init);          \
+    CHECK_AND_GET_MAX_TYPE(op)                  \
+    switch (max_type) {                         \
+        case scm_integer_type: {                \
+            long ret;                           \
+            GEN_PLUS_OR_MUL_PRIM_ACCUMULATE(op) \
+            return scm_make_integer(ret);       \
+        }                                       \
+        case scm_float_type: {                  \
+            double ret;                         \
+            GEN_PLUS_OR_MUL_PRIM_ACCUMULATE(op) \
+            return scm_make_float(ret);         \
+        }                                       \
+    }                                           \
 }
 
-static scm_object* minus_prim(int argc, scm_object *argv[])
+#define GEN_MINUS_OR_DIV_PRIM_ACCUMULATE(op, init)     \
+    switch(argv[0]->type) {                     \
+        case scm_integer_type:\
+            ret = SCM_INT_VAL(argv[0]);         \
+            break;                              \
+        case scm_float_type:                    \
+            ret = SCM_FLOAT_VAL(argv[0]);       \
+            break;                              \
+    }                                           \
+    if(argc == 1)                               \
+        ret = init op ret;                      \
+    else                                        \
+    for (argi = 1; argi < argc; argi++) {       \
+        switch (argv[argi]->type) {             \
+            case scm_integer_type:              \
+                ret op##= SCM_INT_VAL(argv[argi]);\
+                break;                          \
+            case scm_float_type:                \
+                ret op##= SCM_FLOAT_VAL(argv[argi]);\
+                break;                          \
+        }                                       \
+    }
+#define GEN_MINUS_OR_DIV_PRIM(op, init) {        \
+    CHECK_AND_GET_MAX_TYPE(op)                  \
+    switch (max_type) {                         \
+        case scm_integer_type: {                \
+            long ret;                           \
+            GEN_MINUS_OR_DIV_PRIM_ACCUMULATE(op, init) \
+            return scm_make_integer(ret);       \
+        }                                       \
+        case scm_float_type: {                  \
+            double ret;                         \
+            GEN_MINUS_OR_DIV_PRIM_ACCUMULATE(op, init) \
+            return scm_make_float(ret);         \
+        }                                       \
+    }                                           \
+}
+
+static scm_object* plus_prim(int argc, scm_object *argv[])
 {
-    if (SCM_INTEGERP(argv[0]))
-        return scm_make_integer(SCM_INT_VAL(argv[0]) - SCM_INT_VAL(argv[1]));
-    //if(SCM_FALSEP(argv[0]))
-    return scm_make_float(SCM_FLOAT_VAL(argv[0]) - SCM_FLOAT_VAL(argv[1]));
+    GEN_PLUS_OR_MUL_PRIM(+, 0);
 }
 
 static scm_object* mul_prim(int argc, scm_object *argv[])
 {
-    if(argc > 0) {
-        if (SCM_INTEGERP(argv[0]))
-            return scm_make_integer(SCM_INT_VAL(argv[0]) * SCM_INT_VAL(argv[1]));
-        //if(SCM_FALSEP(argv[0]))
-        return scm_make_float(SCM_FLOAT_VAL(argv[0]) * SCM_FLOAT_VAL(argv[1]));
-    } else {
-        return scm_int_zero;
-    }
+    GEN_PLUS_OR_MUL_PRIM(*, 1);
+}
+
+static scm_object* minus_prim(int argc, scm_object *argv[])
+{
+    GEN_MINUS_OR_DIV_PRIM(-, 0);
 }
 
 static scm_object* div_prim(int argc, scm_object *argv[])
 {
-    if (SCM_INTEGERP(argv[0]))
-        return scm_make_integer(SCM_INT_VAL(argv[0]) / SCM_INT_VAL(argv[1]));
-    //if(SCM_FALSEP(argv[0]))
-    return scm_make_float(SCM_FLOAT_VAL(argv[0]) / SCM_FLOAT_VAL(argv[1]));
+    GEN_MINUS_OR_DIV_PRIM(/, 1);
 }
 
+#define EQ_PRIM_FOREACH(first_val) \
+    for(argi = 1; argi < argc; argi++) {        \
+        switch(argv[argi]->type) {              \
+            case scm_integer_type:              \
+                if(first_val != SCM_INT_VAL(argv[argi]))\
+                    return scm_false;           \
+                break;                          \
+            case scm_float_type:                \
+                if(first_val != SCM_FLOAT_VAL(argv[argi]))\
+                    return scm_false;           \
+                break;                          \
+            default:                            \
+                return scm_wrong_contract("=", "number?", argi, argc, argv);\
+        }\
+    }
 static scm_object* eq_prim(int argc, scm_object *argv[])
 {
-    if (SCM_INTEGERP(argv[0]))
-        return SCM_BOOL(SCM_INT_VAL(argv[0]) == SCM_INT_VAL(argv[1]));
-    //if(SCM_FALSEP(argv[0]))
-    return scm_make_float(SCM_FLOAT_VAL(argv[0]) == SCM_FLOAT_VAL(argv[1]));
+    scm_object *first = argv[0];
+    int argi;
+
+    switch(first->type) {
+        case scm_integer_type:
+            EQ_PRIM_FOREACH(SCM_INT_VAL(first))
+            break;
+        case scm_float_type:
+            EQ_PRIM_FOREACH(SCM_FLOAT_VAL(first))
+            break;
+        default:
+            return scm_wrong_contract("=", "number?", 0, argc, argv);
+    }
+
+    return scm_true;
 }
 
+#define COMP_PRIM_CMP_WITH_NEXT_ARG(op, prev_arg_val)    \
+    switch(argv[argi + 1]->type) {          \
+        case scm_integer_type:              \
+            if(!(prev_arg_val op SCM_INT_VAL(argv[argi + 1])))\
+                return scm_false;           \
+            break;                          \
+        case scm_float_type:                \
+            if(!(prev_arg_val op SCM_FLOAT_VAL(argv[argi + 1])))\
+                return scm_false;           \
+            break;                          \
+        default:                            \
+            return scm_wrong_contract(#op, "real?", argi + 1, argc, argv);\
+    }
+#define COMP_PRIM(op) {                                                     \
+    int argi;                                                               \
+    for(argi = 0; argi < argc - 1; argi++) {                                \
+        switch (argv[argi]->type) {                                         \
+            case scm_integer_type:                                          \
+                COMP_PRIM_CMP_WITH_NEXT_ARG(op, SCM_INT_VAL(argv[argi]))    \
+                break;                                                      \
+            case scm_float_type:                                            \
+                COMP_PRIM_CMP_WITH_NEXT_ARG(op, SCM_FLOAT_VAL(argv[argi]))  \
+                break;                                                      \
+            default:                                                        \
+                return scm_wrong_contract(#op, "real?", argi, argc, argv);  \
+        }                                                                   \
+    }                                                                       \
+    return scm_true;                                                        \
+}
 static scm_object* lt_prim(int argc, scm_object *argv[])
 {
-    if (SCM_INTEGERP(argv[0]))
-        return SCM_BOOL(SCM_INT_VAL(argv[0]) < SCM_INT_VAL(argv[1]));
-    //if(SCM_FALSEP(argv[0]))
-    return scm_make_float(SCM_FLOAT_VAL(argv[0]) < SCM_FLOAT_VAL(argv[1]));
+    COMP_PRIM(<);
 }
 
 static scm_object* gt_prim(int argc, scm_object *argv[])
 {
-    if (SCM_INTEGERP(argv[0]))
-        return SCM_BOOL(SCM_INT_VAL(argv[0]) > SCM_INT_VAL(argv[1]));
-    //if(SCM_FALSEP(argv[0]))
-    return scm_make_float(SCM_FLOAT_VAL(argv[0]) > SCM_FLOAT_VAL(argv[1]));
+    COMP_PRIM(>);
 }
 
 static scm_object* lteq_prim(int argc, scm_object *argv[])
 {
-    if (SCM_INTEGERP(argv[0]))
-        return SCM_BOOL(SCM_INT_VAL(argv[0]) <= SCM_INT_VAL(argv[1]));
-    //if(SCM_FALSEP(argv[0]))
-    return scm_make_float(SCM_FLOAT_VAL(argv[0]) <= SCM_FLOAT_VAL(argv[1]));
+    COMP_PRIM(<=);
 }
 
 static scm_object* gteq_prim(int argc, scm_object *argv[])
 {
-    if (SCM_INTEGERP(argv[0]))
-        return SCM_BOOL(SCM_INT_VAL(argv[0]) >= SCM_INT_VAL(argv[1]));
-    //if(SCM_FALSEP(argv[0]))
-    return scm_make_float(SCM_FLOAT_VAL(argv[0]) >= SCM_FLOAT_VAL(argv[1]));
+    COMP_PRIM(>=);
 }
