@@ -5,7 +5,6 @@
 #include "list.h"
 #include "scm.h"
 
-
 static scm_object* eval(scm_object *, scm_env *);
 static scm_object* apply_primitive_procedure(scm_object *, int, scm_object *[]);
 static scm_object* eval_definition(scm_object *, scm_env *);
@@ -53,8 +52,6 @@ static scm_object* eval(scm_object *exp, scm_env *env)
                 }
                 if (SAME_OBJ(operator, scm_if_symbol)) {
                     scm_object *optionalAlt;
-                    // 首先求值谓词表达式
-                    // 然后继续判断谓词的值：如果为真，返回后件，否则返回前件
                     exp = SCM_TRUEP( eval(scm_if_predicate(exp), env) ) ?
                           scm_if_consequent(exp) : (optionalAlt = scm_if_alternative(exp),
                                                     SCM_NULLP(optionalAlt) ? scm_void : optionalAlt);
@@ -82,8 +79,6 @@ static scm_object* eval(scm_object *exp, scm_env *env)
                 env = make_apply_env((scm_compound_proc *)proc, argc, argv);
                 goto EVAL;
             }
-            return exp;
-            break;
         }
         case scm_null_type:
             break;
@@ -107,18 +102,32 @@ static scm_object* eval_lambda(scm_object *exp, scm_env *env)
 
     scm_object *formals = scm_lambda_paramters(exp);
 
-    proc->params = formals;
-
     //计算参数数量
     if(SCM_PAIRP(formals)) {
         int len = scm_list_length(formals);
+        int param_i = 0;
+        proc->params = scm_malloc_object(len * sizeof(scm_object *));
         proc->min_arity = len;
-        if(SCM_LISTP(formals)) {
+
+        while(SCM_PAIRP(formals)) {
+            proc->params[param_i++] = SCM_CAR(formals);
+            formals = SCM_CDR(formals);
+        }
+        if(SCM_NULLP(formals)) {
             proc->max_arity = len;
         } else {
+            proc->params[param_i++] = SCM_CAR(formals);
             proc->max_arity = -1;
         }
+        proc->params_len = param_i;
+    } else if(SCM_NULLP(formals)) {
+        proc->min_arity = 0;
+        proc->max_arity = 0;
+        proc->params_len = 0;
     } else if(SCM_SYMBOLP(formals)) {
+        proc->params = scm_malloc_object(sizeof(scm_object *));
+        proc->params[0] = formals;
+        proc->params_len = 1;
         proc->min_arity = 0;
         proc->max_arity = -1;
     } else {
@@ -140,7 +149,31 @@ static scm_object* eval_definition(scm_object *exp, scm_env *env)
 
 static scm_env* make_apply_env(scm_compound_proc *proc, int argc, scm_object *argv[])
 {
-    return proc->env;
+    if(proc->params_len > 0) {
+        scm_env *apply_env = (scm_env *)scm_malloc_object(sizeof(scm_env));
+        apply_env->rest = NULL;
+
+        int index;
+        if(proc->min_arity == proc->max_arity) { // '(x y z)
+            for(index = 0; index < proc->params_len; index++)
+                scm_env_add_binding(apply_env, (scm_symbol *) proc->params[index], argv[index]);
+        } else {
+            if(proc->min_arity > 0) { // '(x y . z)
+                for(index = 0; index < proc->params_len - 1; index++)
+                    scm_env_add_binding(apply_env, (scm_symbol *) proc->params[index], argv[index]);
+                scm_env_add_binding(apply_env, (scm_symbol *) proc->params[index],
+                    scm_build_list(argc - index, argv + index));
+            } else { // 'x
+                scm_env_add_binding(apply_env, (scm_symbol *) proc->params[0], scm_build_list(argc, argv));
+            }
+        }
+
+        apply_env->rest->rest = proc->env;
+
+        return apply_env;
+    } else { // '()
+        return proc->env;
+    }
 }
 
 scm_object* scm_definition_var(scm_object *exp)

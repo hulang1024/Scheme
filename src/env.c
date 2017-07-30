@@ -5,18 +5,21 @@
 #include "symbol.h"
 #include "read.h"
 #include "print.h"
+#include "error.h"
 
 scm_env* scm_basic_env()
 {
     scm_env *env = (scm_env *)scm_malloc_object(sizeof(scm_env));
     env->rest = NULL;
+
     scm_init_bool(env);
     scm_init_number(env);
-    scm_init_list(env);
     scm_init_symbol(env);
+    scm_init_list(env);
     scm_init_port(env);
-    scm_init_read(env);
     scm_init_print(env);
+    scm_init_read(env);
+
     return env;
 }
 
@@ -39,6 +42,8 @@ scm_object* scm_env_lookup(scm_env *env, scm_symbol *id)
             return env->val;
         env = env->rest;
     }
+    scm_error(SCM_SYMBOL_STR_VAL(id),
+        "undefined;\n cannot reference undefined identifier");
     return NULL;
 }
 

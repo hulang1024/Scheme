@@ -8,6 +8,11 @@ static scm_object* plus_prim(int, scm_object *[]);
 static scm_object* minus_prim(int, scm_object *[]);
 static scm_object* mul_prim(int, scm_object *[]);
 static scm_object* div_prim(int, scm_object *[]);
+static scm_object* eq_prim(int, scm_object *[]);
+static scm_object* lt_prim(int, scm_object *[]);
+static scm_object* gt_prim(int, scm_object *[]);
+static scm_object* lteq_prim(int, scm_object *[]);
+static scm_object* gteq_prim(int, scm_object *[]);
 
 void scm_init_number(scm_env *env)
 {
@@ -16,13 +21,20 @@ void scm_init_number(scm_env *env)
 
     scm_add_prim(env, "number?", number_p_prim, 0, -1);
     scm_add_prim(env, "integer?", integer_p_prim, 0, -1);
+
     scm_add_prim(env, "+", plus_prim, 0, -1);
     scm_add_prim(env, "-", minus_prim, 1, -1);
     scm_add_prim(env, "*", mul_prim, 0, -1);
     scm_add_prim(env, "/", div_prim, 1, -1);
+
+    scm_add_prim(env, "=", eq_prim, 2, -1);
+    scm_add_prim(env, "<", lt_prim, 2, -1);
+    scm_add_prim(env, ">", gt_prim, 2, -1);
+    scm_add_prim(env, "<=", lteq_prim, 2, -1);
+    scm_add_prim(env, ">=", gteq_prim, 2, -1);
 }
 
-scm_object* scm_make_integer(int val)
+scm_object* scm_make_integer(long val)
 {
     scm_object *o = scm_malloc_object(sizeof(scm_integer));
     o->type = scm_integer_type;
@@ -40,12 +52,12 @@ scm_object* scm_make_float(double val)
 
 static scm_object* number_p_prim(int argc, scm_object *argv[])
 {
-    return SCM_INTEGERP(argv[0]) || SCM_FALSEP(argv[0]) ? scm_true : scm_false;
+    return SCM_BOOL(SCM_INTEGERP(argv[0]) || SCM_FALSEP(argv[0]));
 }
 
 static scm_object* integer_p_prim(int argc, scm_object *argv[])
 {
-    return SCM_INTEGERP(argv[0]) ? scm_true : scm_false;
+    return SCM_BOOL(SCM_INTEGERP(argv[0]));
 }
 
 static scm_object* plus_prim(int argc, scm_object *argv[])
@@ -86,4 +98,44 @@ static scm_object* div_prim(int argc, scm_object *argv[])
         return scm_make_integer(SCM_INT_VAL(argv[0]) / SCM_INT_VAL(argv[1]));
     //if(SCM_FALSEP(argv[0]))
     return scm_make_float(SCM_FLOAT_VAL(argv[0]) / SCM_FLOAT_VAL(argv[1]));
+}
+
+static scm_object* eq_prim(int argc, scm_object *argv[])
+{
+    if (SCM_INTEGERP(argv[0]))
+        return SCM_BOOL(SCM_INT_VAL(argv[0]) == SCM_INT_VAL(argv[1]));
+    //if(SCM_FALSEP(argv[0]))
+    return scm_make_float(SCM_FLOAT_VAL(argv[0]) == SCM_FLOAT_VAL(argv[1]));
+}
+
+static scm_object* lt_prim(int argc, scm_object *argv[])
+{
+    if (SCM_INTEGERP(argv[0]))
+        return SCM_BOOL(SCM_INT_VAL(argv[0]) < SCM_INT_VAL(argv[1]));
+    //if(SCM_FALSEP(argv[0]))
+    return scm_make_float(SCM_FLOAT_VAL(argv[0]) < SCM_FLOAT_VAL(argv[1]));
+}
+
+static scm_object* gt_prim(int argc, scm_object *argv[])
+{
+    if (SCM_INTEGERP(argv[0]))
+        return SCM_BOOL(SCM_INT_VAL(argv[0]) > SCM_INT_VAL(argv[1]));
+    //if(SCM_FALSEP(argv[0]))
+    return scm_make_float(SCM_FLOAT_VAL(argv[0]) > SCM_FLOAT_VAL(argv[1]));
+}
+
+static scm_object* lteq_prim(int argc, scm_object *argv[])
+{
+    if (SCM_INTEGERP(argv[0]))
+        return SCM_BOOL(SCM_INT_VAL(argv[0]) <= SCM_INT_VAL(argv[1]));
+    //if(SCM_FALSEP(argv[0]))
+    return scm_make_float(SCM_FLOAT_VAL(argv[0]) <= SCM_FLOAT_VAL(argv[1]));
+}
+
+static scm_object* gteq_prim(int argc, scm_object *argv[])
+{
+    if (SCM_INTEGERP(argv[0]))
+        return SCM_BOOL(SCM_INT_VAL(argv[0]) >= SCM_INT_VAL(argv[1]));
+    //if(SCM_FALSEP(argv[0]))
+    return scm_make_float(SCM_FLOAT_VAL(argv[0]) >= SCM_FLOAT_VAL(argv[1]));
 }

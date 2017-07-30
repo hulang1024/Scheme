@@ -24,8 +24,9 @@ scm_object* scm_make_stdout_port();
 scm_object* scm_make_stdin_port();
 scm_object* scm_make_file_output_port(FILE *);
 scm_object* scm_make_file_input_port(FILE *);
+scm_object* scm_close_output_port(scm_object *);
+scm_object* scm_close_input_port(scm_object *);
 int scm_getc(scm_object* port);
 int scm_ungetc(int ch, scm_object* port);
-
 
 #endif //SCHEME_PORT_H

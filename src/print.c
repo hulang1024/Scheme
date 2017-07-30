@@ -2,34 +2,23 @@
 #include "list.h"
 #include "bool.h"
 #include "env.h"
+#include "scm.h"
 
 enum {
     DISPLAY = 0,
     WRITE = 1
 };
 
+static scm_object* write_prim(int, scm_object *[]);
+static scm_object* display_prim(int, scm_object *[]);
+
 static void write(scm_object *port, scm_object *, int);
 static void write_pair(scm_object *port, scm_object *, int);
-
-scm_object* write_prim(int, scm_object *[]);
-scm_object* display_prim(int, scm_object *[]);
 
 void scm_init_print(scm_env *env)
 {
     scm_add_prim(env, "write", write_prim, 1, 2);
     scm_add_prim(env, "display", display_prim, 1, 2);
-}
-
-scm_object* write_prim(int argc, scm_object *argv[])
-{
-    write(scm_stdout_port, argv[0], WRITE);
-    return scm_void;
-}
-
-scm_object* display_prim(int argc, scm_object *argv[])
-{
-    write(scm_stdout_port, argv[0], DISPLAY);
-    return scm_void;
 }
 
 void scm_write(scm_object *port, scm_object *obj)
@@ -42,11 +31,21 @@ void scm_display(scm_object *port, scm_object *obj)
     write(port, obj, DISPLAY);
 }
 
-void write(scm_object *port, scm_object *obj, int notdisplay)
+static scm_object* write_prim(int argc, scm_object *argv[])
+{
+    write(scm_stdout_port, argv[0], WRITE);
+    return scm_void;
+}
+
+static scm_object* display_prim(int argc, scm_object *argv[])
+{
+    write(scm_stdout_port, argv[0], DISPLAY);
+    return scm_void;
+}
+
+static void write(scm_object *port, scm_object *obj, int notdisplay)
 {
     FILE* f = ((scm_output_port *)port)->f;// TODO:
-
-    //TODO: display opt
 
     switch(SCM_TYPE(obj)) {
         case scm_true_type:
@@ -56,10 +55,10 @@ void write(scm_object *port, scm_object *obj, int notdisplay)
             fprintf(f, "#f");
             break;
         case scm_integer_type:
-            fprintf(f, "%d", SCM_INT_VAL(obj));
+            fprintf(f, "%ld", SCM_INT_VAL(obj));
             break;
         case scm_float_type:
-            fprintf(f, "%f", SCM_FLOAT_VAL(obj));
+            fprintf(f, "%lf", SCM_FLOAT_VAL(obj));
             break;
         case scm_char_type:
             if(notdisplay) {
@@ -107,7 +106,7 @@ void write(scm_object *port, scm_object *obj, int notdisplay)
     }
 }
 
-void write_pair(scm_object *port, scm_object *pair, int notdisplay)
+static void write_pair(scm_object *port, scm_object *pair, int notdisplay)
 {
     FILE* f = ((scm_output_port *)port)->f;// TODO:
 

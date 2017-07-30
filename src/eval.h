@@ -4,8 +4,8 @@
 #include "scm.h"
 
 #define scm_operator SCM_CAR
-#define scm_quoted_object SCM_CADR
 #define scm_operands SCM_CDR
+#define scm_quoted_object SCM_CADR
 #define scm_if_predicate SCM_CADR
 #define scm_if_consequent SCM_CADDR
 #define scm_if_alternative(exp) (SCM_NULLP(SCM_CDDDR(exp)) ? SCM_CDDDR(exp) : SCM_CADDDR(exp))

@@ -2,6 +2,7 @@
 #include "number.h"
 #include "bool.h"
 #include "env.h"
+#include "scm.h"
 
 static scm_object* pair_p_prim(int, scm_object *[]);
 static scm_object* null_p_prim(int, scm_object *[]);
@@ -34,6 +35,7 @@ scm_object* scm_make_pair(scm_object *car, scm_object *cdr)
 {
     scm_object *pair = scm_malloc_object(sizeof(scm_pair));
     pair->type = scm_pair_type;
+    ((scm_pair *)pair)->is_list_mark = -1;
     SCM_CAR(pair) = car;
     SCM_CDR(pair) = cdr;
     return pair;
@@ -45,7 +47,7 @@ scm_object* scm_build_list(int size, scm_object **argv)
     int i;
 
     for (i = size; i--; ) {
-        pair = cons(argv[i], pair);
+        pair = SCM_CONS(argv[i], pair);
     }
 
     return pair;
@@ -66,30 +68,41 @@ int scm_list_length(scm_object *list)
 
 int scm_is_list(scm_object *obj)
 {
-    if(SCM_NULLP(obj))
+    if(SCM_PAIRP(obj)) {
+        if(((scm_pair *)obj)->is_list_mark == 1)
+            return 1;
+        else if(((scm_pair *)obj)->is_list_mark == 0)
+            return 0;
+        else {
+            while(SCM_PAIRP(obj)) {
+                obj = SCM_CDR(obj);
+            }
+            if (SCM_NULLP(obj))
+                return 1;
+        }
+    } else if(SCM_NULLP(obj))
         return 1;
-    // TODO: pairs of contains null
     return 0;
-}
-
-static scm_object* cons_prim(int argc, scm_object *argv[])
-{
-    return cons(argv[0], argv[1]);
 }
 
 static scm_object* pair_p_prim(int argc, scm_object *argv[])
 {
-    return SCM_PAIRP(argv[0]) ? scm_true : scm_false;
+    return SCM_BOOL(SCM_PAIRP(argv[0]));
 }
 
 static scm_object* null_p_prim(int argc, scm_object *argv[])
 {
-    return SCM_NULLP(argv[0]) ? scm_true : scm_false;
+    return SCM_BOOL(SCM_NULLP(argv[0]));
 }
 
 static scm_object* list_p_prim(int argc, scm_object *argv[])
 {
-    return scm_is_list(argv[0]) ? scm_true : scm_false;
+    return SCM_BOOL(scm_is_list(argv[0]));
+}
+
+static scm_object* cons_prim(int argc, scm_object *argv[])
+{
+    return SCM_CONS(argv[0], argv[1]);
 }
 
 static scm_object* car_prim(int argc, scm_object *argv[])

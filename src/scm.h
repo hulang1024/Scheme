@@ -40,7 +40,7 @@ typedef struct {
 
 typedef struct {
     scm_object o;
-    int int_val;
+    long int_val;
 } scm_integer;
 
 typedef struct {
@@ -65,6 +65,7 @@ typedef struct {
 
 typedef struct {
     scm_object o;
+    short is_list_mark; // -1=unknown, 0=no, 1=yes
     scm_object *car;
     scm_object *cdr;
 } scm_pair;
@@ -86,7 +87,8 @@ typedef struct {
     const char *name;
     scm_env *env; // for closure
     scm_object *body;
-    scm_object *params;
+    scm_object **params;
+    int params_len;
     int min_arity;
     int max_arity;
 } scm_compound_proc;

@@ -8,6 +8,7 @@
 #include "symbol.h"
 #include "list.h"
 #include "env.h"
+#include "scm.h"
 
 scm_object* scm_read(scm_object *);
 static scm_object* read_char(scm_object *);
@@ -19,7 +20,7 @@ static scm_object* read_list(scm_object *);
 static void skip_whitespace_comments(scm_object *);
 static void read_error();
 
-scm_object* read_prim(int, scm_object *[]);
+static scm_object* read_prim(int, scm_object *[]);
 
 int isodigit(char c) { return '0' <= c && c <= '7'; }
 
@@ -75,7 +76,7 @@ void scm_init_read(scm_env *env)
     scm_add_prim(env, "read", read_prim, 0, 1);
 }
 
-scm_object* read_prim(int argc, scm_object *argv[])
+static scm_object* read_prim(int argc, scm_object *argv[])
 {
     return scm_read(scm_stdin_port);
 }
@@ -184,6 +185,12 @@ static scm_object* read_list(scm_object *port)
             head = prev = cons(o, scm_null);
         }
     }
+
+    if(!SCM_NULLP(head)) {
+        if (!found_dot || SCM_NULLP(curr)) {
+            ((scm_pair *) head)->is_list_mark = 1;
+        }
+    }
     return head;
 }
 
@@ -263,7 +270,7 @@ static scm_object* read_number(scm_object *port, char radixc, int sign)
                 if(sign < 0) num *= sign;
                 return scm_make_float(num);
             } else {
-                int num = atoi(buf);
+                int num = atol(buf);
                 if(sign < 0) num *= sign;
                 return scm_make_integer(num);
             }

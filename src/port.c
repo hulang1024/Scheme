@@ -38,6 +38,16 @@ scm_object* scm_make_file_input_port(FILE *f)
     return port;
 }
 
+scm_object* scm_close_output_port(scm_object *port)
+{
+    fclose( ((scm_output_port *)port)->f );
+}
+
+scm_object* scm_close_input_port(scm_object *port)
+{
+    fclose( ((scm_input_port *)port)->f );
+}
+
 int scm_getc(scm_object* port)
 {
     return getc( ((scm_input_port *)port)->f );
