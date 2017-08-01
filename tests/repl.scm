@@ -1,4 +1,4 @@
 ﻿(define (loop)
-  (display (read))
+  (display (eval (read)))
   (loop))
 (loop)
