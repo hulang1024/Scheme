@@ -14,7 +14,7 @@ static scm_object* display_prim(int, scm_object *[]);
 static scm_object* newline_prim(int, scm_object *[]);
 
 static void write(scm_object *port, scm_object *, int);
-static void write_pair(scm_object *port, scm_object *, int);
+static void write_list(scm_object *port, scm_object *, int);
 
 void scm_init_print(scm_env *env)
 {
@@ -87,7 +87,7 @@ static void write(scm_object *port, scm_object *obj, int notdisplay)
             fprintf(f, "%s", SCM_SYMBOL_STR_VAL(obj));
             break;
         case scm_pair_type:
-            write_pair(port, obj, notdisplay);
+            write_list(port, obj, notdisplay);
             break;
         case scm_null_type:
             fprintf(f, "()");
@@ -107,17 +107,25 @@ static void write(scm_object *port, scm_object *obj, int notdisplay)
     }
 }
 
-static void write_pair(scm_object *port, scm_object *pair, int notdisplay)
+static void write_list(scm_object *port, scm_object *list, int notdisplay)
 {
     FILE* f = ((scm_output_port *)port)->f;// TODO:
 
     fprintf(f, "(");
-    scm_object *o = pair;
-    for (; SCM_PAIRP(o); o = SCM_CDR(o)) {
-        scm_write(port, SCM_CAR(o));
-        fprintf(f, " ");;
+    while (!SCM_NULLP(list)) {
+        if (SCM_PAIRP(list)) {
+            scm_write(port, SCM_CAR(list));
+            if (!SCM_NULLP(SCM_CDR(list))) {
+                fprintf(f, " ");
+                list = SCM_CDR(list);
+            } else {
+                list = scm_null;
+            }
+        } else {
+            fprintf(f, ". ");
+            write(port, list, notdisplay);
+            list = scm_null;
+        }
     }
-    fprintf(f, ". ");
-    write(port, o, notdisplay);
     fprintf(f, ")");
 }
