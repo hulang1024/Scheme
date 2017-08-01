@@ -114,7 +114,7 @@ static scm_object* integer_p_prim(int argc, scm_object *argv[])
     } \
 }
 
-#define GEN_MINUS_OR_DIV_PRIM_ACCUMULATE(fname, op, init) \
+#define GEN_MINUS_OR_DIV_PRIM_ACCUMULATE(op, init) \
     switch (argv[0]->type) { \
         case scm_integer_type:\
             ret = SCM_INT_VAL(argv[0]); \
@@ -218,11 +218,11 @@ static scm_object* eq_prim(int argc, scm_object *argv[])
     return scm_true; \
 }
 
-GEN_PLUS_OR_MUL_PRIM(plus, +, 0)
-GEN_PLUS_OR_MUL_PRIM(mul, *, 1)
-GEN_MINUS_OR_DIV_PRIM(minus, -, 0)
-GEN_MINUS_OR_DIV_PRIM(div, /, 1)
-GEN_COMP_PRIM(lt, <)
-GEN_COMP_PRIM(gt, >)
-GEN_COMP_PRIM(lteq, <=)
-GEN_COMP_PRIM(gteq, >=)
+GEN_PLUS_OR_MUL_PRIM(plus, +, 0);
+GEN_PLUS_OR_MUL_PRIM(mul, *, 1);
+GEN_MINUS_OR_DIV_PRIM(minus, -, 0);
+GEN_MINUS_OR_DIV_PRIM(div, /, 1);
+GEN_COMP_PRIM(lt, <);
+GEN_COMP_PRIM(gt, >);
+GEN_COMP_PRIM(lteq, <=);
+GEN_COMP_PRIM(gteq, >=);
