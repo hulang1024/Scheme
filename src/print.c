@@ -48,7 +48,7 @@ static void write(scm_object *port, scm_object *obj, int notdisplay)
 {
     FILE* f = ((scm_output_port *)port)->f;// TODO:
 
-    switch(SCM_TYPE(obj)) {
+    switch (SCM_TYPE(obj)) {
         case scm_true_type:
             fprintf(f, "#t");
             break;
@@ -62,7 +62,7 @@ static void write(scm_object *port, scm_object *obj, int notdisplay)
             fprintf(f, "%lf", SCM_FLOAT_VAL(obj));
             break;
         case scm_char_type:
-            if(notdisplay) {
+            if (notdisplay) {
                 switch (SCM_CHAR_VAL(obj)) {
                     case '\n':
                         fprintf(f, "#\\newline");
@@ -78,7 +78,7 @@ static void write(scm_object *port, scm_object *obj, int notdisplay)
             }
             break;
         case scm_string_type:
-            if(notdisplay)
+            if (notdisplay)
                 fprintf(f, "\"%s\"", SCM_CHAR_STR_VAL(obj));
             else
                 fprintf(f, "%s", SCM_CHAR_STR_VAL(obj));
@@ -113,7 +113,7 @@ static void write_pair(scm_object *port, scm_object *pair, int notdisplay)
 
     fprintf(f, "(");
     scm_object *o = pair;
-    for(; SCM_PAIRP(o); o = SCM_CDR(o)) {
+    for (; SCM_PAIRP(o); o = SCM_CDR(o)) {
         scm_write(port, SCM_CAR(o));
         fprintf(f, " ");;
     }

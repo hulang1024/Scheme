@@ -27,7 +27,7 @@ scm_env* scm_basic_env()
 
 void scm_env_add_binding(scm_env *env, scm_symbol *id, scm_object *val)
 {
-    while(env->rest) {
+    while (env->rest) {
         env = env->rest;
     }
 
@@ -37,16 +37,13 @@ void scm_env_add_binding(scm_env *env, scm_symbol *id, scm_object *val)
     env->rest->rest = NULL;
 }
 
-scm_object* scm_env_lookup(scm_env *env, scm_symbol *id)
+scm_env_entry* scm_env_lookup(scm_env *env, scm_symbol *id)
 {
-    while(env) {
+    while (env) {
         if (SAME_PTR(env->id, id))
-            return env->val;
+            return env;
         env = env->rest;
     }
-    scm_print_error(SCM_SYMBOL_STR_VAL(id));
-    scm_print_error(": undefined;\n cannot reference undefined identifier\n");
-    scm_throw_error();
     return NULL;
 }
 

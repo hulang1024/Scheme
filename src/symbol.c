@@ -46,9 +46,9 @@ scm_symbol* scm_get_intern_symbol(const char *str)
 {
     scm_object *syms = symbols;
     scm_symbol *sym;
-    while(!SCM_NULLP(syms)) {
+    while (!SCM_NULLP(syms)) {
         sym = (scm_symbol *)SCM_CAR(syms);
-        if(stricmp(SCM_SYMBOL_STR_VAL(sym), str) == 0)
+        if (stricmp(SCM_SYMBOL_STR_VAL(sym), str) == 0)
             return sym;
         syms = SCM_CDR(syms);
     }

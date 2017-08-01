@@ -4,6 +4,8 @@
 #include "env.h"
 #include "error.h"
 
+scm_object scm_null[1];
+
 static scm_object* pair_p_prim(int, scm_object *[]);
 static scm_object* null_p_prim(int, scm_object *[]);
 static scm_object* list_p_prim(int, scm_object *[]);
@@ -56,9 +58,9 @@ scm_object* scm_build_list(int size, scm_object **argv)
 int scm_list_length(scm_object *list)
 {
     int len = 0;
-    while(!SCM_NULLP(list)) {
+    while (!SCM_NULLP(list)) {
         len++;
-        if(SCM_PAIRP(list))
+        if (SCM_PAIRP(list))
             list = SCM_CDR(list);
         else
             list = scm_null;
@@ -68,19 +70,19 @@ int scm_list_length(scm_object *list)
 
 int scm_is_list(scm_object *obj)
 {
-    if(SCM_PAIRP(obj)) {
-        if(((scm_pair *)obj)->is_list_mark == 1)
+    if (SCM_PAIRP(obj)) {
+        if (((scm_pair *)obj)->is_list_mark == 1)
             return 1;
-        else if(((scm_pair *)obj)->is_list_mark == 0)
+        else if (((scm_pair *)obj)->is_list_mark == 0)
             return 0;
         else {
-            while(SCM_PAIRP(obj)) {
+            while (SCM_PAIRP(obj)) {
                 obj = SCM_CDR(obj);
             }
             if (SCM_NULLP(obj))
                 return 1;
         }
-    } else if(SCM_NULLP(obj))
+    } else if (SCM_NULLP(obj))
         return 1;
     return 0;
 }
@@ -107,21 +109,21 @@ static scm_object* cons_prim(int argc, scm_object *argv[])
 
 static scm_object* car_prim(int argc, scm_object *argv[])
 {
-    if(SCM_PAIRP(argv[0]))
+    if (SCM_PAIRP(argv[0]))
         return SCM_CAR(argv[0]);
     return scm_wrong_contract("car", "pair?", 0, argc, argv);
 }
 
 static scm_object* cdr_prim(int argc, scm_object *argv[])
 {
-    if(SCM_PAIRP(argv[0]))
+    if (SCM_PAIRP(argv[0]))
         return SCM_CDR(argv[0]);
     return scm_wrong_contract("cdr", "pair?", 0, argc, argv);
 }
 
 static scm_object* setcar_prim(int argc, scm_object *argv[])
 {
-    if(SCM_PAIRP(argv[0])) {
+    if (SCM_PAIRP(argv[0])) {
         SCM_CAR(argv[0]) = argv[1];
         return scm_void;
     }
@@ -130,7 +132,7 @@ static scm_object* setcar_prim(int argc, scm_object *argv[])
 
 static scm_object* setcdr_prim(int argc, scm_object *argv[])
 {
-    if(SCM_PAIRP(argv[0])) {
+    if (SCM_PAIRP(argv[0])) {
         SCM_CDR(argv[0]) = argv[1];
         return scm_void;
     }
@@ -144,7 +146,7 @@ static scm_object* list_prim(int argc, scm_object *argv[])
 
 static scm_object* length_prim(int argc, scm_object *argv[])
 {
-    if(SCM_PAIRP(argv[0]))
+    if (SCM_PAIRP(argv[0]))
         return scm_make_integer(scm_list_length(argv[0]));
     return scm_wrong_contract("length", "pair?", 0, argc, argv);
 }

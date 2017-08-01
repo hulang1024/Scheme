@@ -26,9 +26,9 @@ int isodigit(char c) { return '0' <= c && c <= '7'; }
 
 int isdelimiter(char c)
 {
-    if(isspace(c))
+    if (isspace(c))
         return 1;
-    switch(c) {
+    switch (c) {
         case '(': case ')':
         case '[': case ']':
         case '{': case '}':
@@ -40,7 +40,7 @@ int isdelimiter(char c)
 
 int is_special_inital(char c)
 {
-    switch(c) {
+    switch (c) {
         case '!': case '$': case '%':
         case '&': case '*': case '/':
         case ':': case '<': case '=':
@@ -53,7 +53,7 @@ int is_special_inital(char c)
 
 int is_peculiar_identifier(char c)
 {
-    switch(c) {
+    switch (c) {
         case '+': case '-':
             // and case '...'
             return 1;
@@ -63,7 +63,7 @@ int is_peculiar_identifier(char c)
 
 int is_sepcial_subsequent(char c)
 {
-    switch(c) {
+    switch (c) {
         case '+': case '-':
         case '.': case '@':
             return 1;
@@ -89,10 +89,10 @@ scm_object* scm_read(scm_object *port)
 
     char c = scm_getc(port);
 
-    switch(c) {
+    switch (c) {
         case '#':
             c = scm_getc(port);
-            switch(c) {
+            switch (c) {
                 case 't':
                 case 'T':
                     obj = scm_true;
@@ -135,12 +135,12 @@ scm_object* scm_read(scm_object *port)
             obj = read_quote(port);
             break;
         default:
-            if(scm_eofp(c)) {
+            if (scm_eofp(c)) {
                 break;
-            } else if(isdigit(c)) {
+            } else if (isdigit(c)) {
                 scm_ungetc(c, port);
                 obj = read_number(port, 10, 1);
-            } else if(isalpha(c) || is_special_inital(c)) {
+            } else if (isalpha(c) || is_special_inital(c)) {
                 obj = read_symbol(port, c);
             }
     }
@@ -160,7 +160,7 @@ static scm_object* read_list(scm_object *port)
     scm_object *o;
     char c;
 
-    while(1) {
+    while (1) {
         c = scm_getc(port);
         if(c == ')' || c == ']' || c == '}' || scm_eofp(c))
             break;
@@ -169,9 +169,9 @@ static scm_object* read_list(scm_object *port)
         o = scm_read(port);
         skip_whitespace_comments(port);
 
-        if(prev != NULL) {
-            if(NOT_SAME_OBJ(o, (scm_object *)scm_dot_symbol)) {
-                if(!found_dot) {
+        if (prev != NULL) {
+            if (NOT_SAME_OBJ(o, (scm_object *)scm_dot_symbol)) {
+                if (!found_dot) {
                     curr = cons(o, scm_null);
                     SCM_CDR(prev) = curr;
                     prev = curr;
@@ -186,7 +186,7 @@ static scm_object* read_list(scm_object *port)
         }
     }
 
-    if(!SCM_NULLP(head)) {
+    if (!SCM_NULLP(head)) {
         if (!found_dot || SCM_NULLP(curr)) {
             ((scm_pair *) head)->is_list_mark = 1;
         }
@@ -203,12 +203,12 @@ static scm_object* read_symbol(scm_object *port, char initch)
     char c;
 
     buf[buf_idx++] = initch;
-    while(1) {
+    while (1) {
         c = scm_getc(port);
-        if(isdelimiter(c)) {
+        if (isdelimiter(c)) {
             scm_ungetc(c, port);
             break;
-        } else if(scm_eofp(c)) {
+        } else if (scm_eofp(c)) {
             break;
         }
         if(buf_idx > buf_size) {
@@ -235,7 +235,7 @@ static scm_object* read_number(scm_object *port, char radixc, int sign)
     int dot = 0;
     char c;
 
-    switch(radixc) {
+    switch (radixc) {
         case 'b':
         case 'B':
             // radix 2
@@ -245,18 +245,18 @@ static scm_object* read_number(scm_object *port, char radixc, int sign)
         case 'd':
         case 'D':
         case 10:
-            while(1) {
+            while (1) {
                 c = scm_getc(port);
-                if(isdigit(c)) {
+                if (isdigit(c)) {
                     APPEND_CH(c);
-                } else if(c == '.') {
+                } else if (c == '.') {
                     if(dot) {
                         read_error();
                         return NULL;
                     }
                     dot = 1;
                     APPEND_CH(c);
-                } else if(scm_eofp(c)) {
+                } else if (scm_eofp(c)) {
                     break;
                 } else {
                     scm_ungetc(c, port);
@@ -265,13 +265,13 @@ static scm_object* read_number(scm_object *port, char radixc, int sign)
             }
             buf[buf_idx] = '\0';
 
-            if(dot) {
+            if (dot) {
                 double num = atof(buf);
-                if(sign < 0) num *= sign;
+                if (sign < 0) num *= sign;
                 return scm_make_float(num);
             } else {
                 int num = atol(buf);
-                if(sign < 0) num *= sign;
+                if (sign < 0) num *= sign;
                 return scm_make_integer(num);
             }
             break;
@@ -293,27 +293,27 @@ static scm_object* read_char(scm_object *port)
     char *buf = (char*)malloc(CHARS_BUF_SIZE_INIT + 1);
     char c;
 
-    while(1) {
+    while (1) {
         c = scm_getc(port);
-        if(isdelimiter(c)) {
+        if (isdelimiter(c)) {
             scm_ungetc(c, port);
             break;
-        } else if(scm_eofp(c)) {
+        } else if (scm_eofp(c)) {
             break;
         }
-        if(buf_idx > buf_size) {
+        if (buf_idx > buf_size) {
             buf_size += 2;
             buf = realloc(buf, buf_size);
         }
         buf[buf_idx++] = c;
     }
-    if(buf_idx == 1) {
+    if (buf_idx == 1) {
         c = *buf;
     } else {
         buf[buf_idx] = '\0';
-        if(stricmp(buf, "space") == 0)
+        if (stricmp(buf, "space") == 0)
             c = ' ';
-        else if(stricmp(buf, "newline") == 0)
+        else if (stricmp(buf, "newline") == 0)
             c = '\n';
     }
     return scm_make_char(c);
@@ -328,12 +328,12 @@ static scm_object* read_string(scm_object *port)
     char *buf = (char*)malloc(STR_BUF_SIZE_INIT + 1);
     char ch;
 
-    while(1) {
+    while (1) {
         ch = scm_getc(port);
         // escape sequence handling
-        if(ch == '\\') {
+        if (ch == '\\') {
             ch = scm_getc(port);
-            switch(ch) {
+            switch (ch) {
                 case '\\': case '\"': case '\'': break;
                 case 'a': ch = '\a'; break;
                 case 'b': ch = '\b'; break;
@@ -352,12 +352,12 @@ static scm_object* read_string(scm_object *port)
                     //if(isodigit(ch))
                     ;
             }
-        } else if(ch == '"') {
+        } else if (ch == '"') {
             break;
-        } else if(scm_eofp(ch)) {
+        } else if (scm_eofp(ch)) {
             break;
         }
-        if(buf_idx > buf_size) {
+        if (buf_idx > buf_size) {
             buf_size += 20;
             buf = realloc(buf, buf_size);
         }
@@ -371,16 +371,16 @@ static scm_object* read_string(scm_object *port)
 static void skip_whitespace_comments(scm_object *port)
 {
     char c;
-    while(1) {
+    while (1) {
         c = scm_getc(port);
-        if(isspace(c))
+        if (isspace(c))
             continue;
-        else if(c == ';') {
+        else if (c == ';') {
             while(1) {
                 c = scm_getc(port);
-                if(c == '\n' || c == '\r')
+                if (c == '\n' || c == '\r')
                     break;
-                else if(scm_eofp(c))
+                else if (scm_eofp(c))
                     return;
             }
         } else

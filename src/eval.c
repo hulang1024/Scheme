@@ -11,6 +11,7 @@
 static scm_object* eval(scm_object *, scm_env *);
 static scm_object* apply_primitive_procedure(scm_object *, int, scm_object *[]);
 static scm_object* eval_definition(scm_object *, scm_env *);
+static scm_object* eval_assignment(scm_object *, scm_env *)
 static scm_object* eval_lambda(scm_object *, scm_env *);
 static scm_env* make_apply_env(scm_compound_proc *, int, scm_object *[]);
 static int match_arity(scm_object *, int, scm_object *[]);
@@ -28,7 +29,7 @@ void scm_init()
 
 scm_object* scm_eval(scm_object *exp)
 {
-    if( setjmp(eval_error_jmp) == 1) {
+    if (setjmp(eval_error_jmp_buf) == 1) {
         return NULL;
     }
     return eval(exp, global_env);
@@ -46,10 +47,17 @@ static scm_object* eval(scm_object *exp, scm_env *env)
         case scm_string_type:
         case scm_void_type:
             return exp;
+            
         case scm_symbol_type:
-            return scm_env_lookup(env, (scm_symbol *) exp);
+            scm_env_entry *entry = scm_env_lookup(env, (scm_symbol *)exp);
+            if (entry != NULL) {
+                return entry->val;
+            } else {
+                return scm_undefined_identifier(entry->id);
+            }
+            
         case scm_pair_type: {
-            if(!SCM_LISTP(exp)) {
+            if (!SCM_LISTP(exp)) {
                 scm_print_error("application: bad syntax\n");
                 scm_print_error("  in: ");
                 scm_write(scm_stdout_port, exp);
@@ -83,6 +91,8 @@ static scm_object* eval(scm_object *exp, scm_env *env)
                                                     SCM_NULLP(optionalAlt) ? scm_void : optionalAlt);
                     goto EVAL;
                 }
+                if (SAME_OBJ(operator, scm_assignment_symbol))
+                    return eval_assignment(exp, env);
             }
 
             scm_object *proc = eval((scm_object *) operator, env);
@@ -98,7 +108,7 @@ static scm_object* eval(scm_object *exp, scm_env *env)
 
             if (SCM_PRIMPROCP(proc)) {
                 return apply_primitive_procedure(proc, argc, argv);
-            } else if(SCM_COMPROCP(proc)) {
+            } else if (SCM_COMPROCP(proc)) {
                 if(match_arity(proc, argc, argv)) {
                     exp = scm_make_begin(((scm_compound_proc *) proc)->body);
                     env = make_apply_env((scm_compound_proc *) proc, argc, argv);
@@ -113,7 +123,7 @@ static scm_object* eval(scm_object *exp, scm_env *env)
         }
         case scm_null_type:
             break;
-        default:;
+        default: ;
     }
     return NULL;
 }
@@ -135,36 +145,39 @@ static scm_object* eval_lambda(scm_object *exp, scm_env *env)
 
     scm_object *formals = scm_lambda_paramters(exp);
 
-    //计算参数数量
-    if(SCM_PAIRP(formals)) {
+    if (SCM_PAIRP(formals)) {
         int len = scm_list_length(formals);
         int param_i = 0;
         proc->params = malloc(len * sizeof(scm_object *));
         proc->min_arity = len;
 
-        while(SCM_PAIRP(formals)) {
+        while (SCM_PAIRP(formals)) {
             proc->params[param_i++] = SCM_CAR(formals);
             formals = SCM_CDR(formals);
         }
-        if(SCM_NULLP(formals)) {
+        if (SCM_NULLP(formals)) {
             proc->max_arity = len;
         } else {
             proc->params[param_i++] = SCM_CAR(formals);
             proc->max_arity = -1;
         }
         proc->params_len = param_i;
-    } else if(SCM_NULLP(formals)) {
+    } else if (SCM_NULLP(formals)) {
         proc->min_arity = 0;
         proc->max_arity = 0;
         proc->params_len = 0;
-    } else if(SCM_SYMBOLP(formals)) {
+    } else if (SCM_SYMBOLP(formals)) {
         proc->params = malloc(sizeof(scm_object *));
         proc->params[0] = formals;
         proc->params_len = 1;
         proc->min_arity = 0;
         proc->max_arity = -1;
     } else {
-        // 'not an identifier'
+        scm_print_error("lambda: argument sequence\n");
+        scm_print_error("  in: ");
+        scm_write(scm_stdout_port, exp);
+        scm_print_error("\n");
+        scm_throw_error();
     }
 
     return (scm_object *)proc;
@@ -172,11 +185,31 @@ static scm_object* eval_lambda(scm_object *exp, scm_env *env)
 
 static scm_object* eval_definition(scm_object *exp, scm_env *env)
 {
-    scm_object *id = scm_definition_var(exp);
+    scm_symbol *id = scm_definition_var(exp);
     scm_object *val = eval(scm_definition_val(exp), env);
-    if(SCM_COMPROCP(val))
+    if (SCM_COMPROCP(val))
         ((scm_compound_proc *)val)->name = SCM_SYMBOL_STR_VAL(id);
-    scm_env_add_binding(env, (scm_symbol *)id, val);
+    
+    scm_env_entry * entry = scm_env_lookup(env, id);
+    if (entry == NULL) {
+        scm_env_add_binding(env, id, val);
+    } else {
+        entry->val = val;
+    }
+    
+    return scm_void;
+}
+
+static scm_object* eval_assignment(scm_object *exp, scm_env *env)
+{
+    scm_symbol *id = scm_assignment_var(exp);
+    scm_env_entry * entry = scm_env_lookup(env, id);
+    if (entry != NULL) {
+        entry->val = eval(scm_assignment_var(exp), env);
+    }
+    // if entry is NULL
+    scm_undefined_identifier(entry->id);
+    
     return scm_void;
 }
 
@@ -187,17 +220,17 @@ static scm_env* make_apply_env(scm_compound_proc *proc, int argc, scm_object *ar
         apply_env->rest = NULL;
 
         int index;
-        if(proc->min_arity == proc->max_arity) { // '(x y z)
-            for(index = 0; index < proc->params_len; index++)
-                scm_env_add_binding(apply_env, (scm_symbol *) proc->params[index], argv[index]);
+        if (proc->min_arity == proc->max_arity) { // '(x y z)
+            for (index = 0; index < proc->params_len; index++)
+                scm_env_add_binding(apply_env, (scm_symbol *)proc->params[index], argv[index]);
         } else {
-            if(proc->min_arity > 0) { // '(x y . z)
-                for(index = 0; index < proc->params_len - 1; index++)
+            if (proc->min_arity > 0) { // '(x y . z)
+                for (index = 0; index < proc->params_len - 1; index++)
                     scm_env_add_binding(apply_env, (scm_symbol *) proc->params[index], argv[index]);
-                scm_env_add_binding(apply_env, (scm_symbol *) proc->params[index],
+                scm_env_add_binding(apply_env, (scm_symbol *)proc->params[index],
                     scm_build_list(argc - index, argv + index));
             } else { // 'x
-                scm_env_add_binding(apply_env, (scm_symbol *) proc->params[0], scm_build_list(argc, argv));
+                scm_env_add_binding(apply_env, (scm_symbol *)proc->params[0], scm_build_list(argc, argv));
             }
         }
 
@@ -211,13 +244,13 @@ static scm_env* make_apply_env(scm_compound_proc *proc, int argc, scm_object *ar
 
 static int match_arity(scm_object *proc_o, int argc, scm_object *argv[])
 {
-    int mismatch = 0;
+    int unmatched = 0;
     int is_atleast = 0;
     char expected[25] = {0};
     const char *proc_name;
     int min , max;
 
-    if(SCM_COMPROCP(proc_o)) {
+    if (SCM_COMPROCP(proc_o)) {
         min = ((scm_compound_proc *)proc_o)->min_arity;
         max = ((scm_compound_proc *)proc_o)->max_arity;
         proc_name = ((scm_compound_proc *)proc_o)->name;
@@ -227,70 +260,25 @@ static int match_arity(scm_object *proc_o, int argc, scm_object *argv[])
         proc_name = ((scm_primitive_proc *)proc_o)->name;
     }
 
-    if(min == max) {
-        if(argc != min)
-            mismatch = 1;
+    if (min == max) {
+        if (argc != min)
+            unmatched = 1;
         sprintf(expected, "%d", min);
     } else {
-        if(max > 0) {
+        if (max > 0) {
             sprintf(expected, "%d to %d", min, max);
         } else {
             max = 0x3FFFFFFE;
             is_atleast = 1;
             sprintf(expected, "%d", min);
         }
-        if(argc < min || argc > max)
-            mismatch = 1;
+        if (argc < min || argc > max)
+            unmatched = 1;
     }
 
-    if(mismatch) {
-        scm_print_error(proc_name);
-        scm_print_error(": arity mismatch;\n");
-        scm_print_error(" the expected number of arguments does not match the given number\n");
-        scm_print_error("  expected: ");
-        scm_print_error(is_atleast ? "at least " : "");
-        scm_print_error(expected);
-        scm_print_error("\n");
-        scm_print_error("  given: ");
-        char buf[10] = {0};
-        sprintf(buf, "%d\n", argc);
-        scm_print_error(buf);
-        if(argc > 0) {
-            scm_print_error("  arguments...:\n");
-            int argi;
-            for(argi = 0; argi < argc; argi++) {
-                scm_print_error("   ");
-                scm_write(scm_stdout_port, argv[argi]);
-                scm_print_error("\n");
-            }
-        }
-        scm_throw_error();
+    if (unmatched) {
+        scm_unmatched_arity(proc_name, is_atleast, expected, argc, argv);
     }
 
-    return !mismatch;
+    return !unmatched;
 }
-
-scm_object* scm_definition_var(scm_object *exp)
-{
-    if(SCM_SYMBOLP(SCM_CADR(exp)))
-        return SCM_CADR(exp);
-    else if(SCM_PAIRP(SCM_CADR(exp)))
-        return SCM_CAADR(exp);
-    else
-        return SCM_CADR(exp);
-}
-
-scm_object* scm_definition_val(scm_object *exp)
-{
-    if(SCM_SYMBOLP(SCM_CADR(exp)))
-        return SCM_CADDR(exp);
-    else {
-        return scm_make_lambda(SCM_CDADR(exp), SCM_CDDR(exp));
-    }
-}
-
-scm_object* scm_make_lambda(scm_object *parameters, scm_object *body)
-{
-    return SCM_CONS((scm_object *)scm_lambda_symbol, SCM_CONS(parameters, body));
-}
-

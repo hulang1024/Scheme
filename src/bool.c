@@ -29,12 +29,12 @@ void scm_init_bool(scm_env *env)
 
 static int equal(scm_object *x, scm_object *y)
 {
-    if(!SAME_OBJ(x, y))
+    if (!SAME_OBJ(x, y))
         return 0;
-    if(!SCM_SAME_TYPE(SCM_TYPE(x), SCM_TYPE(y))) // types: true, false, null...
+    if (!SCM_SAME_TYPE(SCM_TYPE(x), SCM_TYPE(y))) // types: true, false, null...
         return 0;
     
-    switch(SCM_TYPE(x)) {
+    switch (SCM_TYPE(x)) {
         case scm_integer_type:
             return SCM_INT_VAL(x) == SCM_INT_VAL(y);
         case scm_float_type:

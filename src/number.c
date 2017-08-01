@@ -59,140 +59,122 @@ static scm_object* integer_p_prim(int argc, scm_object *argv[])
     return SCM_BOOL(SCM_INTEGERP(argv[0]));
 }
 
-#define CHECK_AND_GET_MAX_TYPE(op)              \
-    int max_type = scm_integer_type;            \
-    int argi;                                   \
-    for(argi = 0; argi < argc; argi++) {        \
-        switch (argv[argi]->type) {             \
-            case scm_integer_type:              \
-                if(scm_integer_type > max_type) \
+#define CHECK_AND_GET_MAX_TYPE(op) \
+    int max_type = scm_integer_type; \
+    int argi; \
+    for (argi = 0; argi < argc; argi++) { \
+        switch (argv[argi]->type) { \
+            case scm_integer_type: \
+                if (scm_integer_type > max_type) \
                     max_type = scm_integer_type;\
-                break;                          \
-            case scm_float_type:                \
-                if(scm_float_type > max_type)   \
-                    max_type = scm_float_type;  \
-                break;                          \
-            default:                            \
+                break; \
+            case scm_float_type: \
+                if (scm_float_type > max_type) \
+                    max_type = scm_float_type; \
+                break; \
+            default: \
                 return scm_wrong_contract(#op, "number?", argi, argc, argv);\
-        }                                       \
+        } \
     }
 
-#define GEN_PLUS_OR_MUL_PRIM_ACCUMULATE(op)     \
-    switch(argv[0]->type) {                     \
+#define GEN_PLUS_OR_MUL_PRIM_ACCUMULATE(op) \
+    switch (argv[0]->type) { \
         case scm_integer_type:\
-            ret = SCM_INT_VAL(argv[0]);         \
-            break;                              \
-        case scm_float_type:                    \
-            ret = SCM_FLOAT_VAL(argv[0]);       \
-            break;                              \
-    }                                           \
-    for (argi = 1; argi < argc; argi++) {       \
-        switch (argv[argi]->type) {             \
-            case scm_integer_type:              \
+            ret = SCM_INT_VAL(argv[0]); \
+            break; \
+        case scm_float_type: \
+            ret = SCM_FLOAT_VAL(argv[0]); \
+            break; \
+    } \
+    for (argi = 1; argi < argc; argi++) { \
+        switch (argv[argi]->type) { \
+            case scm_integer_type: \
                 ret op##= SCM_INT_VAL(argv[argi]);\
-                break;                          \
-            case scm_float_type:                \
+                break; \
+            case scm_float_type: \
                 ret op##= SCM_FLOAT_VAL(argv[argi]);\
-                break;                          \
-        }                                       \
+                break; \
+        } \
     }
-#define GEN_PLUS_OR_MUL_PRIM(op, init) {        \
-    if(argc == 0)                               \
-        return scm_make_integer(init);          \
-    CHECK_AND_GET_MAX_TYPE(op)                  \
-    switch (max_type) {                         \
-        case scm_integer_type: {                \
-            long ret;                           \
+#define GEN_PLUS_OR_MUL_PRIM(fname, op, init) static scm_object* fname##_prim(int argc, scm_object *argv[]) { \
+    if (argc == 0) \
+        return scm_make_integer(init); \
+    CHECK_AND_GET_MAX_TYPE(op) \
+    switch (max_type) { \
+        case scm_integer_type: { \
+            long ret; \
             GEN_PLUS_OR_MUL_PRIM_ACCUMULATE(op) \
-            return scm_make_integer(ret);       \
-        }                                       \
-        case scm_float_type: {                  \
-            double ret;                         \
+            return scm_make_integer(ret); \
+        } \
+        case scm_float_type: { \
+            double ret; \
             GEN_PLUS_OR_MUL_PRIM_ACCUMULATE(op) \
-            return scm_make_float(ret);         \
-        }                                       \
-    }                                           \
+            return scm_make_float(ret); \
+        } \
+    } \
 }
 
-#define GEN_MINUS_OR_DIV_PRIM_ACCUMULATE(op, init)     \
-    switch(argv[0]->type) {                     \
+#define GEN_MINUS_OR_DIV_PRIM_ACCUMULATE(fname, op, init) \
+    switch (argv[0]->type) { \
         case scm_integer_type:\
-            ret = SCM_INT_VAL(argv[0]);         \
-            break;                              \
-        case scm_float_type:                    \
-            ret = SCM_FLOAT_VAL(argv[0]);       \
-            break;                              \
-    }                                           \
-    if(argc == 1)                               \
-        ret = init op ret;                      \
-    else                                        \
-    for (argi = 1; argi < argc; argi++) {       \
-        switch (argv[argi]->type) {             \
-            case scm_integer_type:              \
+            ret = SCM_INT_VAL(argv[0]); \
+            break; \
+        case scm_float_type: \
+            ret = SCM_FLOAT_VAL(argv[0]); \
+            break; \
+    } \
+    if (argc == 1) \
+        ret = init op ret; \
+    else \
+    for (argi = 1; argi < argc; argi++) { \
+        switch (argv[argi]->type) { \
+            case scm_integer_type: \
                 ret op##= SCM_INT_VAL(argv[argi]);\
-                break;                          \
-            case scm_float_type:                \
+                break; \
+            case scm_float_type: \
                 ret op##= SCM_FLOAT_VAL(argv[argi]);\
-                break;                          \
-        }                                       \
+                break; \
+        } \
     }
-#define GEN_MINUS_OR_DIV_PRIM(op, init) {        \
-    CHECK_AND_GET_MAX_TYPE(op)                  \
-    switch (max_type) {                         \
-        case scm_integer_type: {                \
-            long ret;                           \
+#define GEN_MINUS_OR_DIV_PRIM(fname, op, init) static scm_object* fname##_prim(int argc, scm_object *argv[]) { \
+    CHECK_AND_GET_MAX_TYPE(op) \
+    switch (max_type) { \
+        case scm_integer_type: { \
+            long ret; \
             GEN_MINUS_OR_DIV_PRIM_ACCUMULATE(op, init) \
-            return scm_make_integer(ret);       \
-        }                                       \
-        case scm_float_type: {                  \
-            double ret;                         \
+            return scm_make_integer(ret); \
+        } \
+        case scm_float_type: { \
+            double ret; \
             GEN_MINUS_OR_DIV_PRIM_ACCUMULATE(op, init) \
-            return scm_make_float(ret);         \
-        }                                       \
-    }                                           \
+            return scm_make_float(ret); \
+        } \
+    } \
 }
 
-static scm_object* plus_prim(int argc, scm_object *argv[])
-{
-    GEN_PLUS_OR_MUL_PRIM(+, 0);
-}
-
-static scm_object* mul_prim(int argc, scm_object *argv[])
-{
-    GEN_PLUS_OR_MUL_PRIM(*, 1);
-}
-
-static scm_object* minus_prim(int argc, scm_object *argv[])
-{
-    GEN_MINUS_OR_DIV_PRIM(-, 0);
-}
-
-static scm_object* div_prim(int argc, scm_object *argv[])
-{
-    GEN_MINUS_OR_DIV_PRIM(/, 1);
-}
 
 #define EQ_PRIM_FOREACH(first_val) \
-    for(argi = 1; argi < argc; argi++) {        \
-        switch(argv[argi]->type) {              \
-            case scm_integer_type:              \
-                if(first_val != SCM_INT_VAL(argv[argi]))\
-                    return scm_false;           \
-                break;                          \
-            case scm_float_type:                \
-                if(first_val != SCM_FLOAT_VAL(argv[argi]))\
-                    return scm_false;           \
-                break;                          \
-            default:                            \
+    for (argi = 1; argi < argc; argi++) { \
+        switch (argv[argi]->type) { \
+            case scm_integer_type: \
+                if (first_val != SCM_INT_VAL(argv[argi]))\
+                    return scm_false; \
+                break; \
+            case scm_float_type: \
+                if (first_val != SCM_FLOAT_VAL(argv[argi]))\
+                    return scm_false; \
+                break; \
+            default: \
                 return scm_wrong_contract("=", "number?", argi, argc, argv);\
         }\
     }
+
 static scm_object* eq_prim(int argc, scm_object *argv[])
 {
     scm_object *first = argv[0];
     int argi;
 
-    switch(first->type) {
+    switch (first->type) {
         case scm_integer_type:
             EQ_PRIM_FOREACH(SCM_INT_VAL(first))
             break;
@@ -206,51 +188,41 @@ static scm_object* eq_prim(int argc, scm_object *argv[])
     return scm_true;
 }
 
-#define COMP_PRIM_CMP_WITH_NEXT_ARG(op, prev_arg_val)    \
-    switch(argv[argi + 1]->type) {          \
-        case scm_integer_type:              \
-            if(!(prev_arg_val op SCM_INT_VAL(argv[argi + 1])))\
-                return scm_false;           \
-            break;                          \
-        case scm_float_type:                \
-            if(!(prev_arg_val op SCM_FLOAT_VAL(argv[argi + 1])))\
-                return scm_false;           \
-            break;                          \
-        default:                            \
+#define COMP_PRIM_CMP_WITH_NEXT_ARG(op, prev_arg_val) \
+    switch (argv[argi + 1]->type) { \
+        case scm_integer_type: \
+            if (!(prev_arg_val op SCM_INT_VAL(argv[argi + 1]))) \
+                return scm_false; \
+            break; \
+        case scm_float_type: \
+            if (!(prev_arg_val op SCM_FLOAT_VAL(argv[argi + 1]))) \
+                return scm_false; \
+            break; \
+        default: \
             return scm_wrong_contract(#op, "real?", argi + 1, argc, argv);\
     }
-#define COMP_PRIM(op) {                                                     \
-    int argi;                                                               \
-    for(argi = 0; argi < argc - 1; argi++) {                                \
-        switch (argv[argi]->type) {                                         \
-            case scm_integer_type:                                          \
-                COMP_PRIM_CMP_WITH_NEXT_ARG(op, SCM_INT_VAL(argv[argi]))    \
-                break;                                                      \
-            case scm_float_type:                                            \
-                COMP_PRIM_CMP_WITH_NEXT_ARG(op, SCM_FLOAT_VAL(argv[argi]))  \
-                break;                                                      \
-            default:                                                        \
-                return scm_wrong_contract(#op, "real?", argi, argc, argv);  \
-        }                                                                   \
-    }                                                                       \
-    return scm_true;                                                        \
-}
-static scm_object* lt_prim(int argc, scm_object *argv[])
-{
-    COMP_PRIM(<);
+#define GEN_COMP_PRIM(fname, op) static scm_object* fname##_prim(int argc, scm_object *argv[]) { \
+    int argi; \
+    for (argi = 0; argi < argc - 1; argi++) { \
+        switch (argv[argi]->type) { \
+            case scm_integer_type: \
+                COMP_PRIM_CMP_WITH_NEXT_ARG(op, SCM_INT_VAL(argv[argi])) \
+                break; \
+            case scm_float_type: \
+                COMP_PRIM_CMP_WITH_NEXT_ARG(op, SCM_FLOAT_VAL(argv[argi])) \
+                break; \
+            default: \
+                return scm_wrong_contract(#op, "real?", argi, argc, argv); \
+        } \
+    } \
+    return scm_true; \
 }
 
-static scm_object* gt_prim(int argc, scm_object *argv[])
-{
-    COMP_PRIM(>);
-}
-
-static scm_object* lteq_prim(int argc, scm_object *argv[])
-{
-    COMP_PRIM(<=);
-}
-
-static scm_object* gteq_prim(int argc, scm_object *argv[])
-{
-    COMP_PRIM(>=);
-}
+GEN_PLUS_OR_MUL_PRIM(plus, +, 0)
+GEN_PLUS_OR_MUL_PRIM(mul, *, 1)
+GEN_MINUS_OR_DIV_PRIM(minus, -, 0)
+GEN_MINUS_OR_DIV_PRIM(div, /, 1)
+GEN_COMP_PRIM(lt, <)
+GEN_COMP_PRIM(gt, >)
+GEN_COMP_PRIM(lteq, <=)
+GEN_COMP_PRIM(gteq, >=)

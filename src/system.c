@@ -17,14 +17,14 @@ void scm_init_system(scm_env *env)
 int scm_load_file(const char* filename)
 {
     FILE *file = fopen(filename, "r");
-    if(file == NULL) {
+    if (file == NULL) {
         return -1;
     }
     scm_object *port = scm_make_file_input_port(file);
     scm_object *exp, *val;
     char ch;
 
-    while(!scm_eofp( ch = scm_getc(port) )) {
+    while (!scm_eofp( ch = scm_getc(port) )) {
         scm_ungetc(ch, port);
         exp = scm_read(port);
         if (exp != NULL) {
@@ -41,7 +41,7 @@ static scm_object* load_prim(int argc, scm_object *argv[])
 {
     char* filename = SCM_CHAR_STR_VAL(argv[0]);
     int retcode = scm_load_file(filename);
-    if(retcode != 0) {
+    if (retcode != 0) {
         scm_print_error("open-input-file: cannot open input file\n  path: ");
         scm_print_error(filename);
     }

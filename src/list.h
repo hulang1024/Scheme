@@ -15,7 +15,7 @@
 #define SCM_CADDDR(o) SCM_CAR(SCM_CDDDR(o))
 
 
-scm_object scm_null[1];
+extern scm_object scm_null[];
 
 void scm_init_list(scm_env *env);
 scm_object* scm_make_pair(scm_object *, scm_object *);
