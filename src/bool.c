@@ -29,9 +29,7 @@ void scm_init_bool(scm_env *env)
 
 static int equal(scm_object *x, scm_object *y)
 {
-    if (!SAME_OBJ(x, y))
-        return 0;
-    if (!SCM_SAME_TYPE(SCM_TYPE(x), SCM_TYPE(y))) // types: true, false, null...
+    if (!SCM_SAME_TYPE(SCM_TYPE(x), SCM_TYPE(y))) // types: true, false, void, null, ...
         return 0;
     
     switch (SCM_TYPE(x)) {
@@ -44,10 +42,22 @@ static int equal(scm_object *x, scm_object *y)
         case scm_string_type:
             return strcmp(SCM_CHAR_STR_VAL(x), SCM_CHAR_STR_VAL(y)) == 0;
         case scm_symbol_type:
-            return strcmp(SCM_SYMBOL_STR_VAL(x), SCM_SYMBOL_STR_VAL(y)) == 0;
+        case scm_true_type:
+        case scm_false_type:
         case scm_pair_type:
             // TODO: equal of pair
-            return 0;
+        case scm_null_type:
+        case scm_void_type:
+        case scm_primitive_type:
+        case scm_compound_type:
+        case scm_input_port_type:
+        case scm_output_port_type:
+        case scm_namespace_type:
+        default:
+            if (!SAME_OBJ(x, y))
+                return 0;
+            else
+                return 1;
     }
     return 0;
 }
