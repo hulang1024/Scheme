@@ -1,12 +1,13 @@
 #include "env.h"
 #include "bool.h"
-#include "list.h"
 #include "number.h"
 #include "symbol.h"
+#include "list.h"
 #include "read.h"
 #include "print.h"
+#include "eval.h"
+#include "fun.h"
 #include "system.h"
-#include "error.h"
 
 scm_env* scm_basic_env()
 {
@@ -21,6 +22,8 @@ scm_env* scm_basic_env()
     scm_init_print(env);
     scm_init_read(env);
     scm_init_system(env);
+    scm_init_eval(env);
+    scm_init_fun(env);
 
     return env;
 }
