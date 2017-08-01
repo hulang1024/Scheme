@@ -16,7 +16,7 @@
 
 #define scm_lambda_paramters SCM_CADR
 #define scm_lambda_body SCM_CDDR
-#define scm_make_lambda(params, body) SCM_CONS((scm_object *)scm_lambda_symbol, SCM_CONS(parameters, body))
+#define scm_make_lambda(params, body) SCM_CONS((scm_object *)scm_lambda_symbol, SCM_CONS(params, body))
 
 #define scm_begin_actions SCM_CDR
 #define scm_make_begin(seq) SCM_CONS((scm_object *)scm_begin_symbol, seq)
@@ -27,13 +27,14 @@
 #define scm_definition_val(exp) (SCM_SYMBOLP(SCM_CADR(exp)) ? \
     SCM_CADDR(exp) : scm_make_lambda(SCM_CDADR(exp), SCM_CDDR(exp)))
 
-#define scm_assignment_var CADR
-#define scm_assignment_exp CADDR
+#define scm_assignment_var(exp) ((scm_symbol *)SCM_CADR(exp))
+#define scm_assignment_val SCM_CADDR
 
 extern jmp_buf eval_error_jmp_buf;
 
 void scm_init();
-
+void scm_init_eval(scm_env *);
 scm_object* scm_eval(scm_object *);
+scm_object* scm_apply(scm_object *, int, scm_object *[]);
 
 #endif //SCHEME_EVAL_H
