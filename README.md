@@ -28,6 +28,7 @@
         `number?`,`=`,`<`,`<`,`>`,`<=`,`>=`,`+`,`*`,`-`,`/`,  
         `zero?`,`positive?`,`negative?`,`odd?`,`even?`,`abs`,`remainder`  
        1. 整数: `integer?`
+       2. 实数: `real?`
     + 布尔  
         `boolean?`,`not`
     + 序对和表  
@@ -53,6 +54,6 @@
 
 
 ## 用法
-执行`scheme`会开始并给你一个REPL(Read-Eval-Print-Loop)环境。  
+运行`scheme`会开始并给你一个REPL(Read-Eval-Print-Loop)环境。  
 执行一个源文件:  
-`scheme -file file1.scm`
+`scheme file1.scm file1.scm`

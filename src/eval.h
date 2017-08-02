@@ -30,6 +30,7 @@
 #define scm_assignment_var(exp) ((scm_symbol *)SCM_CADR(exp))
 #define scm_assignment_val SCM_CADDR
 
+
 extern jmp_buf eval_error_jmp_buf;
 
 void scm_init();

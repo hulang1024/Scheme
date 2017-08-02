@@ -6,6 +6,7 @@
 
 static scm_object* number_p_prim(int, scm_object *[]);
 static scm_object* integer_p_prim(int, scm_object *[]);
+static scm_object* real_p_prim(int, scm_object *[]);
 static scm_object* plus_prim(int, scm_object *[]);
 static scm_object* minus_prim(int, scm_object *[]);
 static scm_object* mul_prim(int, scm_object *[]);
@@ -20,7 +21,8 @@ void scm_init_number(scm_env *env)
 {
     scm_add_prim(env, "number?", number_p_prim, 1, 1);
     scm_add_prim(env, "integer?", integer_p_prim, 1, 1);
-
+    scm_add_prim(env, "real?", real_p_prim, 1, 1);
+    
     scm_add_prim(env, "+", plus_prim, 0, -1);
     scm_add_prim(env, "-", minus_prim, 1, -1);
     scm_add_prim(env, "*", mul_prim, 0, -1);
@@ -57,6 +59,11 @@ static scm_object* number_p_prim(int argc, scm_object *argv[])
 static scm_object* integer_p_prim(int argc, scm_object *argv[])
 {
     return SCM_BOOL(SCM_INTEGERP(argv[0]));
+}
+
+static scm_object* real_p_prim(int argc, scm_object *argv[])
+{
+    return SCM_BOOL(SCM_INTEGERP(argv[0]) || SCM_FALSEP(argv[0]));
 }
 
 #define CHECK_AND_GET_MAX_TYPE(op) \

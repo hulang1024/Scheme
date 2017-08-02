@@ -31,13 +31,12 @@ int main(int argc, char *argv[])
         scm_init();
         // do repl
         repl();
-    } else if (argc == 3) {
-        char *opt = argv[1];
-        char *filepath = argv[2];
-        if (strcmp(opt, "-file") == 0) {
-            scm_init();
+    } else if (argc > 1) {
+        scm_init();
+        int i;
+        for (i = 1; i < argc; i++) {
             // load file
-            scm_load_file(filepath);
+            scm_load_file(argv[i]);
         }
     }
 

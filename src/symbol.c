@@ -1,19 +1,13 @@
 #include <string.h>
 #include "symbol.h"
 #include "list.h"
+#include "env.h"
 
 // TODO: hashtable
 static scm_object *symbols = scm_null;
-
 static int gen_sym_id = 0;
 
-scm_object* scm_make_symbol(const char *s)
-{
-    scm_object *o = scm_malloc_object(sizeof(scm_symbol));
-    o->type = scm_symbol_type;
-    SCM_SYMBOL_STR_VAL(o) = s;
-    return o;
-}
+static scm_object* string_p_prim(int, scm_object *[]);
 
 void scm_init_symbol(scm_env *env)
 {
@@ -35,6 +29,21 @@ void scm_init_symbol(scm_env *env)
     scm_do_symbol = scm_get_intern_symbol("do");
     scm_while_symbol = scm_get_intern_symbol("while");
     scm_for_symbol = scm_get_intern_symbol("for");
+    
+    scm_add_prim(env, "symbol?", symbol_p_prim, 1, 1);
+}
+
+scm_object* scm_make_symbol(const char *s)
+{
+    scm_object *o = scm_malloc_object(sizeof(scm_symbol));
+    o->type = scm_symbol_type;
+    SCM_SYMBOL_STR_VAL(o) = s;
+    return o;
+}
+
+static scm_object* symbol_p_prim(int argc, scm_object *argv[])
+{
+    return SCM_BOOL(SCM_SYMBOLP(argv[0]));
 }
 
 static void intern_symbol(scm_symbol *sym)

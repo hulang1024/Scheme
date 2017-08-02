@@ -42,13 +42,13 @@ scm_object* scm_eval(scm_object *exp)
 
 scm_object* scm_apply(scm_object *proc, int argc, scm_object *argv[])
 {
-    if (SCM_PRIMPROCP(proc))
-        return apply_primitive_procedure(proc, argc, argv);
-    if (SCM_COMPROCP(proc)) {
-        if (match_arity(proc, argc, argv)) {
+    if (SCM_PRIMPROCP(proc)) {
+        if (match_arity(proc, argc, argv))
+            return apply_primitive_procedure(proc, argc, argv);
+    } else if (SCM_COMPROCP(proc)) {
+        if (match_arity(proc, argc, argv))
             return eval(scm_make_begin(((scm_compound_proc *)proc)->body),
                 make_apply_env((scm_compound_proc *)proc, argc, argv));
-        }
     }
     return NULL;
 }
