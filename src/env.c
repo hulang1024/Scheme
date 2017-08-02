@@ -2,6 +2,8 @@
 #include "bool.h"
 #include "number.h"
 #include "symbol.h"
+#include "char.h"
+#include "str.h"
 #include "list.h"
 #include "read.h"
 #include "print.h"

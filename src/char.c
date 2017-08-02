@@ -96,50 +96,50 @@ static scm_object* downcase_prim(int argc, scm_object *argv[])
 }
 
 
-#define GEN_CHAR_COMP_PRIM(fname, cmp_op) \
+#define GEN_CHAR_COMP_PRIM(fname, scomp, ccomp) \
     static scm_object* fname##_p_prim(int argc, scm_object *argv[]) \
     { \
         int i; \
         for (i = 0; i < argc - 1; i++) { \
             if (SCM_CHARP(argv[i])) { \
                 if (SCM_CHARP(argv[i + 1])) { \
-                    if (!(SCM_CHAR_VAL(argv[i]) cmp_op SCM_CHAR_VAL(argv[i + 1]))) \
+                    if (!(SCM_CHAR_VAL(argv[i]) ccomp SCM_CHAR_VAL(argv[i + 1]))) \
                         return scm_false; \
                 } else \
-                    return scm_wrong_contract("char"#cmp_op"?", "char?", i + 1, argc, argv); \
+                    return scm_wrong_contract("char"#scomp"?", "char?", i + 1, argc, argv); \
             } else \
-                return scm_wrong_contract("char"#cmp_op"?", "char?", i, argc, argv); \
+                return scm_wrong_contract("char"#scomp"?", "char?", i, argc, argv); \
         } \
         return scm_true; \
     }
     
-#define GEN_CHAR_CI_COMP_PRIM(fname, cmp_op) \
+#define GEN_CHAR_CI_COMP_PRIM(fname, scomp, ccomp) \
     static scm_object* ci_##fname##_p_prim(int argc, scm_object *argv[]) \
     { \
         int i; \
         for (i = 0; i < argc - 1; i++) { \
             if (SCM_CHARP(argv[i])) { \
                 if (SCM_CHARP(argv[i + 1])) { \
-                    if (!(toupper(SCM_CHAR_VAL(argv[i])) cmp_op toupper(SCM_CHAR_VAL(argv[i + 1])))) \
+                    if (!(toupper(SCM_CHAR_VAL(argv[i])) ccomp toupper(SCM_CHAR_VAL(argv[i + 1])))) \
                         return scm_false; \
                 } else \
-                    return scm_wrong_contract("char-ci"#cmp_op"?", "char?", i + 1, argc, argv); \
+                    return scm_wrong_contract("char-ci"#scomp"?", "char?", i + 1, argc, argv); \
             } else \
-                return scm_wrong_contract("char-ci"#cmp_op"?", "char?", i, argc, argv); \
+                return scm_wrong_contract("char-ci"#scomp"?", "char?", i, argc, argv); \
         } \
         return scm_true; \
     }
     
-GEN_CHAR_COMP_PRIM(eq, =);
-GEN_CHAR_COMP_PRIM(lt, <);
-GEN_CHAR_COMP_PRIM(gt, >);
-GEN_CHAR_COMP_PRIM(lteq, <=);
-GEN_CHAR_COMP_PRIM(gteq, >=);
-GEN_CHAR_CI_COMP_PRIM(eq, =);
-GEN_CHAR_CI_COMP_PRIM(lt, <);
-GEN_CHAR_CI_COMP_PRIM(gt, >);
-GEN_CHAR_CI_COMP_PRIM(lteq, <=);
-GEN_CHAR_CI_COMP_PRIM(gteq, >=);
+GEN_CHAR_COMP_PRIM(eq, =, ==);
+GEN_CHAR_COMP_PRIM(lt, <, <);
+GEN_CHAR_COMP_PRIM(gt, >, >);
+GEN_CHAR_COMP_PRIM(lteq, <=, <=);
+GEN_CHAR_COMP_PRIM(gteq, >=, >=);
+GEN_CHAR_CI_COMP_PRIM(eq, =, ==);
+GEN_CHAR_CI_COMP_PRIM(lt, <, <);
+GEN_CHAR_CI_COMP_PRIM(gt, >, >);
+GEN_CHAR_CI_COMP_PRIM(lteq, <=, <=);
+GEN_CHAR_CI_COMP_PRIM(gteq, >=, >=);
 
 
 #define GEN_CHAR_TYPE_P_PRIM(tname, cfname) \
@@ -147,7 +147,7 @@ GEN_CHAR_CI_COMP_PRIM(gteq, >=);
     { \
         if (SCM_CHARP(argv[0])) \
             return SCM_BOOL(cfname(SCM_CHAR_VAL(argv[0]))); \
-        return scm_wrong_contract("char-"#tname#"?", "char?", 0, argc, argv); \
+        return scm_wrong_contract("char-"#tname"?", "char?", 0, argc, argv); \
     }
     
 GEN_CHAR_TYPE_P_PRIM(alphabetic, isalpha);

@@ -44,7 +44,8 @@
         `char->integer`,`integer->char`,  
         `char-upcase`,`char-downcase`
     + 字符串  
-        `string?`
+        `string?`,`make-string`,`string`,`string-length`,`string-ref`,`string-set!`,`substring`,`string-append`,  
+        `string->list`,`list->string`,`string-copy`,`string-fill!`
     + 控制特征  
         `procedure?`,`apply`,`void`,`void?`
     + 求值  

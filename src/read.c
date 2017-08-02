@@ -211,7 +211,7 @@ static scm_object* read_symbol(scm_object *port, char initch)
         } else if (scm_eofp(c)) {
             break;
         }
-        if(buf_idx > buf_size) {
+        if(buf_idx >= buf_size) {
             buf_size += 10; // grow 10bytes
             buf = realloc(buf, buf_size);
         }
@@ -225,7 +225,7 @@ static scm_object* read_symbol(scm_object *port, char initch)
 static scm_object* read_number(scm_object *port, char radixc, int sign)
 {
     #define NUMBER_BUF_SIZE_INIT 5
-    #define APPEND_CH(c) if(buf_idx > buf_size) \
+    #define APPEND_CH(c) if(buf_idx >= buf_size) \
         { buf_size += 3; buf = realloc(buf, buf_size); } \
         buf[buf_idx++] = c;
 
@@ -301,7 +301,7 @@ static scm_object* read_char(scm_object *port)
         } else if (scm_eofp(c)) {
             break;
         }
-        if (buf_idx > buf_size) {
+        if (buf_idx >= buf_size) {
             buf_size += 2;
             buf = realloc(buf, buf_size);
         }
@@ -357,7 +357,7 @@ static scm_object* read_string(scm_object *port)
         } else if (scm_eofp(ch)) {
             break;
         }
-        if (buf_idx > buf_size) {
+        if (buf_idx >= buf_size) {
             buf_size += 20;
             buf = realloc(buf, buf_size);
         }
@@ -365,7 +365,7 @@ static scm_object* read_string(scm_object *port)
     }
     buf[buf_idx] = '\0';
     
-    return scm_make_string(buf, buf_idx + 1);
+    return scm_make_string(buf, buf_idx);
 }
 
 static void skip_whitespace_comments(scm_object *port)

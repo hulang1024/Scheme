@@ -1,5 +1,6 @@
 #include <string.h>
 #include "symbol.h"
+#include "bool.h"
 #include "list.h"
 #include "env.h"
 #include "error.h"
@@ -42,6 +43,11 @@ scm_object* scm_make_symbol(const char *s)
     return o;
 }
 
+static void intern_symbol(scm_symbol *sym)
+{
+    symbols = cons((scm_object *)sym, symbols);
+}
+
 scm_symbol* scm_get_intern_symbol(const char *str)
 {
     scm_object *syms = symbols;
@@ -74,9 +80,4 @@ scm_object* scm_gen_symbol()
 static scm_object* symbol_p_prim(int argc, scm_object *argv[])
 {
     return SCM_BOOL(SCM_SYMBOLP(argv[0]));
-}
-
-static void intern_symbol(scm_symbol *sym)
-{
-    symbols = cons((scm_object *)sym, symbols);
 }

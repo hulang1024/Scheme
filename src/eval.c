@@ -267,7 +267,7 @@ static scm_env* make_apply_env(scm_compound_proc *proc, int argc, scm_object *ar
     }
 }
 
-static int match_arity(scm_object *proc_o, int argc, scm_object *argv[])
+static int match_arity(scm_object *proc, int argc, scm_object *argv[])
 {
     int unmatched = 0;
     int is_atleast = 0;
@@ -275,14 +275,14 @@ static int match_arity(scm_object *proc_o, int argc, scm_object *argv[])
     const char *proc_name;
     int min , max;
 
-    if (SCM_COMPROCP(proc_o)) {
-        min = ((scm_compound_proc *)proc_o)->min_arity;
-        max = ((scm_compound_proc *)proc_o)->max_arity;
-        proc_name = ((scm_compound_proc *)proc_o)->name;
+    if (SCM_COMPROCP(proc)) {
+        min = ((scm_compound_proc *)proc)->min_arity;
+        max = ((scm_compound_proc *)proc)->max_arity;
+        proc_name = ((scm_compound_proc *)proc)->name;
     } else {
-        min = ((scm_primitive_proc *)proc_o)->min_arity;
-        max = ((scm_primitive_proc *)proc_o)->max_arity;
-        proc_name = ((scm_primitive_proc *)proc_o)->name;
+        min = ((scm_primitive_proc *)proc)->min_arity;
+        max = ((scm_primitive_proc *)proc)->max_arity;
+        proc_name = ((scm_primitive_proc *)proc)->name;
     }
 
     if (min == max) {
