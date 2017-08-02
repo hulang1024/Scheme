@@ -364,8 +364,8 @@ static scm_object* read_string(scm_object *port)
         buf[buf_idx++] = ch;
     }
     buf[buf_idx] = '\0';
-
-    return scm_make_string(buf);
+    
+    return scm_make_string(buf, buf_idx + 1);
 }
 
 static void skip_whitespace_comments(scm_object *port)

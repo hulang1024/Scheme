@@ -55,6 +55,7 @@ typedef struct {
 
 typedef struct {
     scm_object o;
+    int len;
     char *char_str_val;
 } scm_string;
 
@@ -132,6 +133,7 @@ typedef struct {
 #define SCM_CHAR_VAL(o) (((scm_char *)(o))->char_val)
 #define SCM_CHAR_STR_VAL(o) (((scm_string *)(o))->char_str_val)
 #define SCM_SYMBOL_STR_VAL(o) (((scm_symbol *)(o))->s)
+#define SCM_STR_LEN(o) (((scm_string *)(o))->len)
 
 #define SCM_CAR(o) (((scm_pair *)(o))->car)
 #define SCM_CDR(o) (((scm_pair *)(o))->cdr)

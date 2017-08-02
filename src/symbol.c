@@ -2,12 +2,13 @@
 #include "symbol.h"
 #include "list.h"
 #include "env.h"
+#include "error.h"
 
 // TODO: hashtable
 static scm_object *symbols = scm_null;
 static int gen_sym_id = 0;
 
-static scm_object* string_p_prim(int, scm_object *[]);
+static scm_object* symbol_p_prim(int, scm_object *[]);
 
 void scm_init_symbol(scm_env *env)
 {
@@ -41,16 +42,6 @@ scm_object* scm_make_symbol(const char *s)
     return o;
 }
 
-static scm_object* symbol_p_prim(int argc, scm_object *argv[])
-{
-    return SCM_BOOL(SCM_SYMBOLP(argv[0]));
-}
-
-static void intern_symbol(scm_symbol *sym)
-{
-    symbols = cons((scm_object *)sym, symbols);
-}
-
 scm_symbol* scm_get_intern_symbol(const char *str)
 {
     scm_object *syms = symbols;
@@ -78,4 +69,14 @@ scm_object* scm_gen_symbol()
     scm_object *sym = scm_make_symbol(NULL);
     intern_symbol((scm_symbol *)sym);
     return sym;
+}
+
+static scm_object* symbol_p_prim(int argc, scm_object *argv[])
+{
+    return SCM_BOOL(SCM_SYMBOLP(argv[0]));
+}
+
+static void intern_symbol(scm_symbol *sym)
+{
+    symbols = cons((scm_object *)sym, symbols);
 }

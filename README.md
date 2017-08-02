@@ -33,12 +33,16 @@
         `boolean?`,`not`
     + 序对和表  
         `pair?`,`null?`,`list?`,`cons`,`car`,`cdr`,`set-car!`,`set-cdr!`,  
-        `caar`,`cadr` `...` `cdddar`,`cddddr` (`car`和`cdr`的组合,定义到第四层),  
+        `caar`,`cadr` `...` `cdddar`,`cddddr` (`car`和`cdr`的组合,默认定义到第四层),  
         `list`,`length`,`memq`,`memv`
     + 符号  
         `symbol?`
     + 字符  
-        `char?`
+        `char?`,`char=?`,`char<?`,`char>?`,`char<=?`,`char>=?`,  
+        `char-ci=?`,`char-ci<?`,`char-ci>?`,`char-ci<=?`,`char-ci>=?`,  
+        `char-alphabetic?`,`char-numeric?`,`char-whitespace?`,`char-upper-case?`,`char-lower-case?`,  
+        `char->integer`,`integer->char`,  
+        `char-upcase`,`char-downcase`
     + 字符串  
         `string?`
     + 控制特征  
@@ -56,4 +60,4 @@
 ## 用法
 运行`scheme`会开始并给你一个REPL(Read-Eval-Print-Loop)环境。  
 执行一个源文件:  
-`scheme file1.scm file1.scm`
+`scheme file1.scm file2.scm`

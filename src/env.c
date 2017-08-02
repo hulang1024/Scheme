@@ -15,7 +15,6 @@ scm_env* scm_basic_env()
     env->rest = NULL;
 
     scm_init_bool(env);
-    scm_init_symbol(env);
     scm_init_char(env);
     scm_init_string(env);
     scm_init_number(env);

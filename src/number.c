@@ -2,7 +2,6 @@
 #include "bool.h"
 #include "env.h"
 #include "error.h"
-#include "scm.h"
 
 static scm_object* number_p_prim(int, scm_object *[]);
 static scm_object* integer_p_prim(int, scm_object *[]);
