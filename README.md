@@ -1,6 +1,6 @@
 ﻿# scheme
 
-[Scheme](https://en.wikipedia.org/wiki/Scheme_(programming_language))编程语言的一个实现。  
+Scheme编程语言的解释器。  
 
 
 ## 特性
@@ -60,5 +60,5 @@
 
 ## 用法
 运行`scheme`会开始并给你一个REPL(Read-Eval-Print-Loop)环境。  
-执行一个源文件:  
+执行源文件:  
 `scheme file1.scm file2.scm`
