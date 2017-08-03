@@ -183,7 +183,7 @@ static scm_object* eval_lambda(scm_object *exp, scm_env *env)
         if (SCM_NULLP(formals)) {
             proc->max_arity = len;
         } else {
-            proc->params[param_i++] = SCM_CAR(formals);
+            proc->params[param_i++] = formals;
             proc->max_arity = -1;
         }
         proc->params_len = param_i;
