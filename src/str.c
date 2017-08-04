@@ -25,7 +25,8 @@ static scm_object* list_to_string_prim(int, scm_object *[]);
 void scm_init_string(scm_env *env)
 {
     scm_empty_string->type = scm_string_type;
-    
+    SCM_CHAR_STR_VAL(scm_empty_string) = "";
+
     scm_add_prim(env, "string?", string_p_prim, 1, 1);
     scm_add_prim(env, "make-string", make_string_prim, 1, 2);
     scm_add_prim(env, "string", string_prim, 0, -1);
