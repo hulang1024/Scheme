@@ -23,6 +23,7 @@ void scm_init_symbol(scm_env *env)
     scm_cond_symbol = scm_get_intern_symbol("cond");
     scm_case_symbol = scm_get_intern_symbol("case");
     scm_else_symbol = scm_get_intern_symbol("else");
+    scm_not_symbol = scm_get_intern_symbol("not");
     scm_and_symbol = scm_get_intern_symbol("and");
     scm_or_symbol = scm_get_intern_symbol("or");
     scm_when_symbol = scm_get_intern_symbol("when");

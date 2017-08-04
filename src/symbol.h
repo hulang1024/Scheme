@@ -13,6 +13,7 @@ scm_symbol *scm_begin_symbol;
 scm_symbol *scm_cond_symbol;
 scm_symbol *scm_case_symbol;
 scm_symbol *scm_else_symbol;
+scm_symbol *scm_not_symbol;
 scm_symbol *scm_and_symbol;
 scm_symbol *scm_or_symbol;
 scm_symbol *scm_when_symbol;
