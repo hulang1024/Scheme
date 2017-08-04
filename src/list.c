@@ -43,7 +43,7 @@ scm_object* scm_make_pair(scm_object *car, scm_object *cdr)
     return pair;
 }
 
-scm_object* scheme_make_list_pair(scm_object *car, scm_object *cdr)
+scm_object* scm_make_list_pair(scm_object *car, scm_object *cdr)
 {
   scm_object *r = scm_make_pair(car, cdr);
   SCM_PAIR_FLAGS(r) |= SCM_PAIR_IS_LIST;
