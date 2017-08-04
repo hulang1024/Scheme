@@ -186,10 +186,8 @@ static scm_object* read_list(scm_object *port)
         }
     }
 
-    if (!SCM_NULLP(head)) {
-        if (!found_dot || SCM_NULLP(curr)) {
-            ((scm_pair *) head)->is_list_mark = 1;
-        }
+    if (!SCM_NULLP(head) && (!found_dot || SCM_NULLP(curr))) {
+        SCM_PAIR_FLAGS(head) |= SCM_PAIR_IS_LIST;
     }
     return head;
 }

@@ -56,23 +56,25 @@ static scm_object* string_p_prim(int argc, scm_object *argv[])
 
 static scm_object* make_string_prim(int argc, scm_object *argv[])
 {
-    if (is_exact_nonnegative_integer(argv[0])) {
-        char c = '\0';
-        if (argc > 1) {
-            if (SCM_CHARP(argv[1])) {
-                c = SCM_CHAR_VAL(argv[1]);
-            } else
-                return scm_wrong_contract("make-string", "char?", 1, argc, argv);
-        }
-        int len = SCM_INT_VAL(argv[0]);
-        char *cs = malloc(sizeof(char) * len + 1);
-        int i;
-        for (i = 0; i < len; i++)
-            cs[i] = c;
-        cs[i] = '\0';
-        return scm_make_string(cs, len);
+    if (!is_exact_nonnegative_integer(argv[0]))
+        return scm_wrong_contract("make-string", "exact-nonnegative-integer?", 0, argc, argv);
+
+    char c = '\0';
+    if (argc > 1) {
+        if (!SCM_CHARP(argv[1]))
+            return scm_wrong_contract("make-string", "char?", 1, argc, argv);
+
+        c = SCM_CHAR_VAL(argv[1]);
     }
-    return scm_wrong_contract("make-string", "exact-nonnegative-integer?", 0, argc, argv);
+    
+    int len = SCM_INT_VAL(argv[0]);
+    char *cs = malloc(sizeof(char) * len + 1);
+    int i;
+    for (i = 0; i < len; i++)
+        cs[i] = c;
+    cs[i] = '\0';
+
+    return scm_make_string(cs, len);
 }
 
 static scm_object* string_prim(int argc, scm_object *argv[])
@@ -80,10 +82,10 @@ static scm_object* string_prim(int argc, scm_object *argv[])
     int i;
     char *cs = malloc(sizeof(char) * argc + 1);
     for (i = 0; i < argc; i++) {
-        if (SCM_CHARP(argv[i])) {
-            cs[i] = SCM_CHAR_VAL(argv[i]);
-        } else
+        if (!SCM_CHARP(argv[i]))
             return scm_wrong_contract("string", "char?", i, argc, argv);
+
+        cs[i] = SCM_CHAR_VAL(argv[i]);
     }
     cs[i] = '\0';
     
@@ -92,157 +94,155 @@ static scm_object* string_prim(int argc, scm_object *argv[])
 
 static scm_object* string_length_prim(int argc, scm_object *argv[])
 {
-    if (SCM_STRINGP(argv[0])) {
-        return scm_make_integer(SCM_STR_LEN(argv[0]));
-    }
-    return scm_wrong_contract("string-length", "string?", 0, argc, argv);
+    if (!SCM_STRINGP(argv[0]))
+        return scm_wrong_contract("string-length", "string?", 0, argc, argv);
+
+    return scm_make_integer(SCM_STR_LEN(argv[0]));
 }
 
 static scm_object* string_ref_prim(int argc, scm_object *argv[])
 {
-    if (SCM_STRINGP(argv[0])) {
-        if (is_exact_nonnegative_integer(argv[1])) {
-            int len = SCM_STR_LEN(argv[0]);
-            int k = SCM_INT_VAL(argv[1]);
-            if (0 <= k && k < len)
-                return scm_make_char(SCM_CHAR_STR_VAL(argv[0])[k]);
-            else
-                return scm_out_of_range("string-ref", argv[0], k, k, 0);
-        } else
-            return scm_wrong_contract("string-ref", "exact-nonnegative-integer?", 1, argc, argv);
-    }
-    return scm_wrong_contract("string-ref", "string?", 0, argc, argv);
+    if (!SCM_STRINGP(argv[0]))
+        return scm_wrong_contract("string-ref", "string?", 0, argc, argv);
+    if (!is_exact_nonnegative_integer(argv[1]))
+        return scm_wrong_contract("string-ref", "exact-nonnegative-integer?", 1, argc, argv);
+
+    int len = SCM_STR_LEN(argv[0]);
+    int k = SCM_INT_VAL(argv[1]);
+    if (!(0 <= k && k < len))
+        return scm_out_of_range("string-ref", argv[0], k, k, 0);
+
+    return scm_make_char(SCM_CHAR_STR_VAL(argv[0])[k]);
 }
 
 static scm_object* string_set_prim(int argc, scm_object *argv[])
 {
-    if (SCM_STRINGP(argv[0])) {
-        if (is_exact_nonnegative_integer(argv[1])) {
-            if (SCM_CHARP(argv[2])) {
-                int len = SCM_STR_LEN(argv[0]);
-                int k = SCM_INT_VAL(argv[1]);
-                if (0 <= k && k < len) {
-                    SCM_CHAR_STR_VAL(argv[0])[k] = SCM_CHAR_VAL(argv[2]);
-                    return scm_void;
-                } else
-                    return scm_out_of_range("string-set!", argv[0], k, k, 0);
-            } else
-                return scm_wrong_contract("string-set!", "char?", 2, argc, argv);
-        } else
-            return scm_wrong_contract("string-set!", "exact-nonnegative-integer?", 1, argc, argv);
-    }
-    return scm_wrong_contract("string-set!", "string?", 0, argc, argv);
+    if (!SCM_STRINGP(argv[0]))
+        return scm_wrong_contract("string-set!", "string?", 0, argc, argv);
+    if (!is_exact_nonnegative_integer(argv[1]))
+        return scm_wrong_contract("string-set!", "exact-nonnegative-integer?", 1, argc, argv);
+    if (!SCM_CHARP(argv[2]))
+        return scm_wrong_contract("string-set!", "char?", 2, argc, argv);
+
+    int len = SCM_STR_LEN(argv[0]);
+    int k = SCM_INT_VAL(argv[1]);
+    if (!(0 <= k && k < len))
+        return scm_out_of_range("string-set!", argv[0], k, k, 0);
+    
+    SCM_CHAR_STR_VAL(argv[0])[k] = SCM_CHAR_VAL(argv[2]);
+    
+    return scm_void;
 }
 
 static scm_object* substring_prim(int argc, scm_object *argv[])
 {
-    if (SCM_STRINGP(argv[0])) {
-        if (is_exact_nonnegative_integer(argv[1])) {
-            if (is_exact_nonnegative_integer(argv[2])) {
-                int len = SCM_STR_LEN(argv[0]);
-                int start = SCM_INT_VAL(argv[1]);
-                int end = SCM_INT_VAL(argv[2]);
-                if ((0 <= start && start <= len) && (start <= end && end <= len)) {
-                    len = end - start;
-                    char *cs = malloc(sizeof(char) * len + 1);
-                    strncpy(cs, SCM_CHAR_STR_VAL(argv[0]) + start, len);
-                    cs[len] = '\0';
-                    return scm_make_string(cs, len);
-                } else {
-                    return scm_out_of_range("substring", argv[0], start, end, 0);
-                }
-            } else
-                return scm_wrong_contract("substring", "exact-nonnegative-integer?", 2, argc, argv);
-        } else
-            return scm_wrong_contract("substring", "exact-nonnegative-integer?", 1, argc, argv);
+    if (!SCM_STRINGP(argv[0]))
+        return scm_wrong_contract("substring", "string?", 0, argc, argv);
+    if (!is_exact_nonnegative_integer(argv[1]))
+        return scm_wrong_contract("substring", "exact-nonnegative-integer?", 1, argc, argv);
+    if (!is_exact_nonnegative_integer(argv[2]))
+        return scm_wrong_contract("substring", "exact-nonnegative-integer?", 2, argc, argv);
+    
+    int len = SCM_STR_LEN(argv[0]);
+    int start = SCM_INT_VAL(argv[1]);
+    int end = SCM_INT_VAL(argv[2]);
+    if ((0 <= start && start <= len) && (start <= end && end <= len)) {
+        len = end - start;
+        char *cs = malloc(sizeof(char) * len + 1);
+        strncpy(cs, SCM_CHAR_STR_VAL(argv[0]) + start, len);
+        cs[len] = '\0';
+        return scm_make_string(cs, len);
+    } else {
+        return scm_out_of_range("substring", argv[0], start, end, 0);
     }
-    return scm_wrong_contract("substring", "string?", 0, argc, argv);
 }
 
 static scm_object* string_append_prim(int argc, scm_object *argv[])
 {
-    if (argc > 0) {
-        int len = 0;
-        int i;
-        for (i = 0; i < argc; i++) {
-            if (SCM_STRINGP(argv[i]))
-                len += SCM_STR_LEN(argv[i]);
-            else
-                return scm_wrong_contract("string-append", "string?", i, argc, argv);
-        }
-        char *cs = malloc(sizeof(char) * len + 1);
-        int end = 0;
-        for (i = 0; i < argc; i++) {
-            strcpy(cs + end, SCM_CHAR_STR_VAL(argv[i]));
-            end += SCM_STR_LEN(argv[i]);
-        }
-        return scm_make_string(cs, len);
-    } else
+    if (argc == 0)
         return scm_empty_string;
+
+    int len = 0;
+    int i;
+    for (i = 0; i < argc; i++) {
+        if (!SCM_STRINGP(argv[i]))
+            return scm_wrong_contract("string-append", "string?", i, argc, argv);
+        len += SCM_STR_LEN(argv[i]);
+    }
+
+    char *cs = malloc(sizeof(char) * len + 1);
+    int end = 0;
+    for (i = 0; i < argc; i++) {
+        strcpy(cs + end, SCM_CHAR_STR_VAL(argv[i]));
+        end += SCM_STR_LEN(argv[i]);
+    }
+
+    return scm_make_string(cs, len);
 }
 
 static scm_object* string_to_list_prim(int argc, scm_object *argv[])
 {
-    if (SCM_STRINGP(argv[0])) {
-        scm_object *ret = scm_null;
-        char *cs = SCM_CHAR_STR_VAL(argv[0]);
-        int i;
-        for(i = SCM_STR_LEN(argv[0]) - 1; i >= 0; i--)
-            ret = SCM_CONS(scm_make_char(cs[i]), ret);
-        return ret;
-    } else
+    if (!SCM_STRINGP(argv[0]))
         return scm_wrong_contract("string->list", "string?", 0, argc, argv);
+
+    scm_object *ret = scm_null;
+    char *cs = SCM_CHAR_STR_VAL(argv[0]);
+    int i;
+    for(i = SCM_STR_LEN(argv[0]) - 1; i >= 0; i--)
+        ret = SCM_CONS(scm_make_char(cs[i]), ret);
+    return ret;
 }
 
 static scm_object* list_to_string_prim(int argc, scm_object *argv[])
 {
-    if (SCM_LISTP(argv[0])) {
-        int len = 0;
-        scm_object *list = argv[0];
-        while (!SCM_NULLP(list)) {
-            if (SCM_PAIRP(list)) {
-                len++;
-                if (!SCM_CHARP(SCM_CAR(list)))
-                    return scm_wrong_contract("list->string", "(listof char?)", 0, argc, argv);
-                list = SCM_CDR(list);
-            } else {
-                if (!SCM_NULLP(list))
-                    return scm_wrong_contract("list->string", "(listof char?)", 0, argc, argv);
-            }
-        }
-        char *cs = malloc(sizeof(char) * len + 1);
-        list = argv[0];
-        int i;
-        for (i = 0; i < len; i++) {
-            cs[i] = SCM_CHAR_VAL(SCM_CAR(list));
-            list = SCM_CDR(list);
-        }
-        cs[i] = '\0';
-        return scm_make_string(cs, len);
-    } else
+    if (!SCM_LISTP(argv[0]))
         return scm_wrong_contract("list->string", "(listof char?)", 0, argc, argv);
+
+    int len = 0;
+    scm_object *list = argv[0];
+    while (!SCM_NULLP(list)) {
+        if (SCM_PAIRP(list)) {
+            len++;
+            if (!SCM_CHARP(SCM_CAR(list)))
+                return scm_wrong_contract("list->string", "(listof char?)", 0, argc, argv);
+            list = SCM_CDR(list);
+        } else {
+            if (!SCM_NULLP(list))
+                return scm_wrong_contract("list->string", "(listof char?)", 0, argc, argv);
+        }
+    }
+    char *cs = malloc(sizeof(char) * len + 1);
+    list = argv[0];
+    int i;
+    for (i = 0; i < len; i++) {
+        cs[i] = SCM_CHAR_VAL(SCM_CAR(list));
+        list = SCM_CDR(list);
+    }
+    cs[i] = '\0';
+    return scm_make_string(cs, len);
 }
 
 static scm_object* string_copy_prim(int argc, scm_object *argv[])
 {
-    if (SCM_STRINGP(argv[0])) {
-        char *cs = malloc(sizeof(char) * SCM_STR_LEN(argv[0]) + 1);
-        strcpy(cs, SCM_CHAR_STR_VAL(argv[0]));
-        return scm_make_string(cs, SCM_STR_LEN(argv[0]));
-    } else
+    if (!SCM_STRINGP(argv[0]))
         return scm_wrong_contract("string-copy", "string?", 0, argc, argv);
+
+    char *cs = malloc(sizeof(char) * SCM_STR_LEN(argv[0]) + 1);
+    strcpy(cs, SCM_CHAR_STR_VAL(argv[0]));
+    return scm_make_string(cs, SCM_STR_LEN(argv[0]));
 }
 
 static scm_object* string_fill_prim(int argc, scm_object *argv[])
 {
-    if (SCM_STRINGP(argv[0])) {
-        if (SCM_CHARP(argv[1])) {
-            char *cs = SCM_CHAR_STR_VAL(argv[0]);
-            char c = SCM_CHAR_VAL(argv[1]);
-            char *sc = cs;
-            while (*sc) *sc++ = c;
-            return scm_void;
-        }
-    } else
+    if (!SCM_STRINGP(argv[0]))
         return scm_wrong_contract("string-fill!", "string?", 0, argc, argv);
+    if (!SCM_CHARP(argv[1]))
+        return scm_wrong_contract("string-fill!", "char?", 1, argc, argv);
+
+    char *cs = SCM_CHAR_STR_VAL(argv[0]);
+    char c = SCM_CHAR_VAL(argv[1]);
+    char *sc = cs;
+    while (*sc) *sc++ = c;
+
+    return scm_void;
 }

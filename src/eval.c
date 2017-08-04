@@ -18,9 +18,13 @@ static scm_object* eval_lambda(scm_object *, scm_env *);
 static scm_env* make_apply_env(scm_compound_proc *, int, scm_object *[]);
 static int match_arity(scm_object *, int, scm_object *[]);
 
+static scm_object* and_to_if(scm_object *);
+static scm_object* or_to_if(scm_object *);
+
 static scm_env *global_env;
 
 jmp_buf eval_error_jmp_buf;
+
 
 void scm_init()
 {
@@ -85,7 +89,7 @@ static scm_object* eval(scm_object *exp, scm_env *env)
                 return scm_undefined_identifier((scm_symbol *)exp);
             }
         }
-
+        
         case scm_pair_type: {
             if (!SCM_LISTP(exp)) {
                 scm_print_error("application: bad syntax\n");
@@ -119,6 +123,14 @@ static scm_object* eval(scm_object *exp, scm_env *env)
                     exp = SCM_TRUEP( eval(scm_if_predicate(exp), env) ) ?
                           scm_if_consequent(exp) : (optionalAlt = scm_if_alternative(exp),
                                                     SCM_NULLP(optionalAlt) ? scm_void : optionalAlt);
+                    goto EVAL;
+                }
+                if (SAME_OBJ(operator, scm_and_symbol)) {
+                    exp = and_to_if(exp);
+                    goto EVAL;
+                }
+                if (SAME_OBJ(operator, scm_or_symbol)) {
+                    exp = or_to_if(exp);
                     goto EVAL;
                 }
                 if (SAME_OBJ(operator, scm_assignment_symbol))
@@ -307,3 +319,43 @@ static int match_arity(scm_object *proc, int argc, scm_object *argv[])
 
     return !unmatched;
 }
+
+
+/* built-in syntax transformers */
+
+#define GEN_AND_OR_OR(name, val_ifnull, pred_exp) \
+    static scm_object* name(scm_object *exp) \
+    { \
+        if(SCM_NULLP(SCM_CDR(exp))) \
+            return val_ifnull; \
+        \
+        scm_object *temp_var = scm_gen_symbol(); \
+        scm_object *head = NULL, *prev; \
+        scm_object *let_exp, *if_exp; \
+        \
+        exp = SCM_CDR(exp); \
+        while(!SCM_NULLP(exp)) { \
+            if(!SCM_NULLP(SCM_CDR(exp))) { \
+                if_exp = scm_make_if(pred_exp, temp_var, NULL); \
+                let_exp = scm_make_let(SCM_LIST1(SCM_LIST2(temp_var, SCM_CAR(exp))), if_exp); \
+                if (head != NULL) \
+                    SCM_CDR(prev) = SCM_LIST1(let_exp); \
+                else \
+                    head = let_exp; \
+                prev = SCM_CDDR(if_exp); \
+            } else { \
+                if (head != NULL) \
+                    SCM_CDR(prev) = SCM_LIST1(SCM_CAR(exp)); \
+                else { \
+                    head = SCM_CAR(exp); \
+                } \
+            } \
+            \
+            exp = SCM_CDR(exp); \
+        } \
+        \
+        return head; \
+    }
+
+GEN_AND_OR_OR(and_to_if, scm_true, scm_make_app(scm_not_symbol, SCM_LIST1(temp_var)));
+GEN_AND_OR_OR(or_to_if, scm_false, temp_var);

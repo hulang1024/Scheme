@@ -69,30 +69,34 @@ static scm_object* char_p_prim(int argc, scm_object *argv[])
 
 static scm_object* char_to_integer_prim(int argc, scm_object *argv[])
 {
-    if (SCM_CHARP(argv[0]))
-        return scm_make_integer(SCM_CHAR_VAL(argv[0]));
-    return scm_wrong_contract("char->integer", "char?", 0, argc, argv);
+    if (!SCM_CHARP(argv[0]))
+        return scm_wrong_contract("char->integer", "char?", 0, argc, argv);
+
+    return scm_make_integer(SCM_CHAR_VAL(argv[0]));
 }
 
 static scm_object* integer_to_char_prim(int argc, scm_object *argv[])
 {
-    if (SCM_INTEGERP(argv[0]))
-        return scm_make_char(SCM_INT_VAL(argv[0]));
-    return scm_wrong_contract("integer->char", "integer?", 0, argc, argv);
+    if (!SCM_INTEGERP(argv[0]))
+        return scm_wrong_contract("integer->char", "integer?", 0, argc, argv);
+
+    return scm_make_char(SCM_INT_VAL(argv[0]));
 }
 
 static scm_object* upcase_prim(int argc, scm_object *argv[])
 {
-    if (SCM_CHARP(argv[0]))
+    if (!SCM_CHARP(argv[0]))
         return scm_make_char(toupper(SCM_CHAR_VAL(argv[0])));
+
     return scm_wrong_contract("char-upcase", "char?", 0, argc, argv);
 }
 
 static scm_object* downcase_prim(int argc, scm_object *argv[])
 {
-    if (SCM_CHARP(argv[0]))
-        return scm_make_char(tolower(SCM_CHAR_VAL(argv[0])));
-    return scm_wrong_contract("char-downcase", "char?", 0, argc, argv);
+    if (!SCM_CHARP(argv[0]))
+        return scm_wrong_contract("char-downcase", "char?", 0, argc, argv);
+
+    return scm_make_char(tolower(SCM_CHAR_VAL(argv[0])));
 }
 
 
@@ -145,9 +149,9 @@ GEN_CHAR_CI_COMP_PRIM(gteq, >=, >=);
 #define GEN_CHAR_TYPE_P_PRIM(tname, cfname) \
     static scm_object* tname##_p_prim(int argc, scm_object *argv[]) \
     { \
-        if (SCM_CHARP(argv[0])) \
-            return SCM_BOOL(cfname(SCM_CHAR_VAL(argv[0]))); \
-        return scm_wrong_contract("char-"#tname"?", "char?", 0, argc, argv); \
+        if (!SCM_CHARP(argv[0])) \
+            return scm_wrong_contract("char-"#tname"?", "char?", 0, argc, argv); \
+        return SCM_BOOL(cfname(SCM_CHAR_VAL(argv[0]))); \
     }
     
 GEN_CHAR_TYPE_P_PRIM(alphabetic, isalpha);

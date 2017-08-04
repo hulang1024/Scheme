@@ -66,7 +66,7 @@ typedef struct {
 
 typedef struct {
     scm_object o;
-    short is_list_mark; // -1=unknown, 0=no, 1=yes
+    short flags;
     scm_object *car;
     scm_object *cdr;
 } scm_pair;
@@ -137,6 +137,12 @@ typedef struct {
 
 #define SCM_CAR(o) (((scm_pair *)(o))->car)
 #define SCM_CDR(o) (((scm_pair *)(o))->cdr)
+
+#define SCM_PAIR_FLAGS(o) (((scm_pair *)o)->flags)
+#define SCM_PAIR_FLAGS_INIT 0
+#define SCM_PAIR_IS_LIST 1
+#define SCM_PAIR_IS_NON_LIST 2
+
 
 /*                      memory management macros                          */
 /* Allocation */
