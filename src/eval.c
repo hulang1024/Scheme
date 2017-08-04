@@ -8,7 +8,15 @@
 #include "print.h"
 #include "scm.h"
 
+#define EVAL(expr) { exp = expr; goto EVAL; }
+
 #define apply_primitive_procedure(proc, argc, argv) (((scm_primitive_proc *)proc)->prim(argc, argv))
+#define when_to_if(exp) \
+    scm_make_if1(scm_when_test(exp), scm_make_begin(scm_when_body(exp)))
+#define unless_to_if(exp) \
+    scm_make_if1( \
+        scm_make_app(scm_not_symbol, SCM_LIST1(scm_unless_test(exp))), \
+        scm_make_begin(scm_unless_body(exp)))
 
 static scm_object* eval_prim(int, scm_object *[]);
 static scm_object* eval(scm_object *, scm_env *);
@@ -18,6 +26,7 @@ static scm_object* eval_lambda(scm_object *, scm_env *);
 static scm_env* make_apply_env(scm_compound_proc *, int, scm_object *[]);
 static int match_arity(scm_object *, int, scm_object *[]);
 
+static scm_object* let_to_combination(scm_object *);
 static scm_object* and_to_if(scm_object *);
 static scm_object* or_to_if(scm_object *);
 
@@ -112,26 +121,31 @@ static scm_object* eval(scm_object *exp, scm_env *env)
                     if (! SCM_NULLP(exps)) {
                         for(; ! SCM_NULLP( SCM_CDR(exps) ); exps = SCM_CDR(exps) )
                             eval(SCM_CAR(exps), env);
-                        exp = SCM_CAR(exps);
-                        goto EVAL;
+                        EVAL(SCM_CAR(exps));
                     } else {
                         return scm_void;
                     }
                 }
                 if (SAME_OBJ(operator, scm_if_symbol)) {
                     scm_object *optionalAlt;
-                    exp = SCM_TRUEP( eval(scm_if_predicate(exp), env) ) ?
+                    EVAL(SCM_TRUEP( eval(scm_if_predicate(exp), env) ) ?
                           scm_if_consequent(exp) : (optionalAlt = scm_if_alternative(exp),
-                                                    SCM_NULLP(optionalAlt) ? scm_void : optionalAlt);
-                    goto EVAL;
+                                                    SCM_NULLP(optionalAlt) ? scm_void : optionalAlt));
+                }
+                if (SAME_OBJ(operator, scm_let_symbol)) {
+                    EVAL(let_to_combination(exp));
                 }
                 if (SAME_OBJ(operator, scm_and_symbol)) {
-                    exp = and_to_if(exp);
-                    goto EVAL;
+                    EVAL(and_to_if(exp));
                 }
                 if (SAME_OBJ(operator, scm_or_symbol)) {
-                    exp = or_to_if(exp);
-                    goto EVAL;
+                    EVAL(or_to_if(exp));
+                }
+                if (SAME_OBJ(operator, scm_when_symbol)) {
+                    EVAL(when_to_if(exp));
+                }
+                if (SAME_OBJ(operator, scm_unless_symbol)) {
+                    EVAL(unless_to_if(exp));
                 }
                 if (SAME_OBJ(operator, scm_assignment_symbol))
                     return eval_assignment(exp, env);
@@ -143,9 +157,8 @@ static scm_object* eval(scm_object *exp, scm_env *env)
             //TODO: O(n)
             scm_object **argv = malloc(sizeof(scm_object *) * scm_list_length(operands));
             int argc = 0;
-            while (!SCM_NULLP(operands)) {
+            scm_list_for_each(operands) {
                 argv[argc++] = eval(SCM_CAR(operands), env);
-                operands = SCM_CDR(operands);
             }
 
             if (SCM_PRIMPROCP(proc)) {
@@ -270,8 +283,11 @@ static scm_env* make_apply_env(scm_compound_proc *proc, int argc, scm_object *ar
                 scm_env_add_binding(apply_env, (scm_symbol *)proc->params[0], scm_build_list(argc, argv));
             }
         }
-
-        apply_env->rest->rest = proc->env;
+        // TODO: high efficient!
+        scm_env *base_env = apply_env;
+        while (base_env->rest)
+            base_env = base_env->rest;
+        base_env->rest = proc->env;
 
         return apply_env;
     } else { // '()
@@ -281,47 +297,66 @@ static scm_env* make_apply_env(scm_compound_proc *proc, int argc, scm_object *ar
 
 static int match_arity(scm_object *proc, int argc, scm_object *argv[])
 {
-    int unmatched = 0;
-    int is_atleast = 0;
-    char expected[25] = {0};
-    const char *proc_name;
     int min , max;
 
     if (SCM_COMPROCP(proc)) {
         min = ((scm_compound_proc *)proc)->min_arity;
         max = ((scm_compound_proc *)proc)->max_arity;
-        proc_name = ((scm_compound_proc *)proc)->name;
     } else {
         min = ((scm_primitive_proc *)proc)->min_arity;
         max = ((scm_primitive_proc *)proc)->max_arity;
-        proc_name = ((scm_primitive_proc *)proc)->name;
     }
 
     if (min == max) {
         if (argc != min)
-            unmatched = 1;
-        sprintf(expected, "%d", min);
+            scm_mismatch_arity(proc, 0, min, -1, argc, argv);
     } else {
         if (max > 0) {
-            sprintf(expected, "%d to %d", min, max);
+            if (argc < min || argc > max)
+                scm_mismatch_arity(proc, 0, min, max, argc, argv);
         } else {
             max = 0x3FFFFFFE;
-            is_atleast = 1;
-            sprintf(expected, "%d", min);
+            if (argc < min || argc > max)
+                scm_mismatch_arity(proc, 1, min, -1, argc, argv);
         }
-        if (argc < min || argc > max)
-            unmatched = 1;
     }
 
-    if (unmatched) {
-        scm_unmatched_arity(proc_name, is_atleast, expected, argc, argv);
-    }
-
-    return !unmatched;
+    return 1;
 }
 
 
 /* built-in syntax transformers */
+static scm_object* let_to_combination(scm_object *exp)
+{
+    scm_object *bindings = scm_let_bindings(exp);
+    scm_object *body = scm_let_body(exp);
+    scm_object *let_binding_vars = scm_null, *var_last;
+    scm_object *let_binding_inits = scm_null, *init_last;
+
+    scm_list_for_each(bindings) {
+        if(SCM_NULLP(let_binding_vars)) {
+            let_binding_vars = var_last = SCM_LCONS(SCM_CAAR(bindings), scm_null);
+            let_binding_inits = init_last = SCM_LCONS(SCM_CADAR(bindings), scm_null);
+        } else {
+            var_last = SCM_CDR(var_last) = SCM_LCONS(SCM_CAAR(bindings), scm_null);
+            init_last = SCM_CDR(init_last) = SCM_LCONS(SCM_CADAR(bindings), scm_null);
+        }
+    }
+
+    if(scm_is_named_let(exp)) {
+        return scm_make_app0(
+                   scm_make_lambda(
+                       scm_null,
+                       SCM_LIST2(
+                           scm_make_def(scm_let_var(exp), scm_make_lambda(let_binding_vars, body)),
+                           scm_make_app(scm_let_var(exp), let_binding_inits))));
+    }
+    else {
+        return scm_make_app(
+                   scm_make_lambda(let_binding_vars, body),
+                   let_binding_inits);
+    }
+}
 
 #define GEN_AND_OR_OR(name, val_ifnull, pred_exp) \
     static scm_object* name(scm_object *exp) \
@@ -334,7 +369,7 @@ static int match_arity(scm_object *proc, int argc, scm_object *argv[])
         scm_object *let_exp, *if_exp; \
         \
         exp = SCM_CDR(exp); \
-        while(!SCM_NULLP(exp)) { \
+        scm_list_for_each(exp) { \
             if(!SCM_NULLP(SCM_CDR(exp))) { \
                 if_exp = scm_make_if(pred_exp, temp_var, NULL); \
                 let_exp = scm_make_let(SCM_LIST1(SCM_LIST2(temp_var, SCM_CAR(exp))), if_exp); \
@@ -351,7 +386,6 @@ static int match_arity(scm_object *proc, int argc, scm_object *argv[])
                 } \
             } \
             \
-            exp = SCM_CDR(exp); \
         } \
         \
         return head; \
