@@ -6,6 +6,7 @@ Scheme编程语言的解释器。
 ## 特性
 目前的支持:
 * 变量引用: `<variable>`
+* 局部变量: `let`
 * 常量引用: `quote`,`'`  
 * 过程调用: `(operator operand ...)`
 * 过程: `lambda`  
@@ -14,12 +15,12 @@ Scheme编程语言的解释器。
 * 闭包
 * 动态类型
 * 传值调用
-* 定义: `define`
-* 赋值: `set!`
-* 顺序结构: `begin`
-* 条件表达式: `if`
+* 条件表达式: `if`,`when`,`unless`,`and`,`or`
 * 递归
 * 尾递归
+* 定义: `define`
+* 顺序结构: `begin`
+* 赋值: `set!`
 
 * 标准过程
     + 相等谓词  
