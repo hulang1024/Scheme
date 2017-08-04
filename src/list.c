@@ -109,34 +109,36 @@ static scm_object* cons_prim(int argc, scm_object *argv[])
 
 static scm_object* car_prim(int argc, scm_object *argv[])
 {
-    if (SCM_PAIRP(argv[0]))
-        return SCM_CAR(argv[0]);
-    return scm_wrong_contract("car", "pair?", 0, argc, argv);
+    if (!SCM_PAIRP(argv[0]))
+        return scm_wrong_contract("car", "pair?", 0, argc, argv);
+
+    return SCM_CAR(argv[0]);
 }
 
 static scm_object* cdr_prim(int argc, scm_object *argv[])
 {
-    if (SCM_PAIRP(argv[0]))
-        return SCM_CDR(argv[0]);
-    return scm_wrong_contract("cdr", "pair?", 0, argc, argv);
+    if (!SCM_PAIRP(argv[0]))
+        return scm_wrong_contract("cdr", "pair?", 0, argc, argv);
+
+    return SCM_CDR(argv[0]);
 }
 
 static scm_object* setcar_prim(int argc, scm_object *argv[])
 {
-    if (SCM_PAIRP(argv[0])) {
-        SCM_CAR(argv[0]) = argv[1];
-        return scm_void;
-    }
-    return scm_wrong_contract("set-car!", "pair?", 0, argc, argv);
+    if (!SCM_PAIRP(argv[0]))
+        return scm_wrong_contract("set-car!", "pair?", 0, argc, argv);
+
+    SCM_CAR(argv[0]) = argv[1];
+    return scm_void;
 }
 
 static scm_object* setcdr_prim(int argc, scm_object *argv[])
 {
-    if (SCM_PAIRP(argv[0])) {
-        SCM_CDR(argv[0]) = argv[1];
-        return scm_void;
-    }
-    return scm_wrong_contract("set-cdr!", "pair?", 0, argc, argv);
+    if (!SCM_PAIRP(argv[0]))
+        return scm_wrong_contract("set-cdr!", "pair?", 0, argc, argv);
+
+    SCM_CDR(argv[0]) = argv[1];
+    return scm_void;
 }
 
 static scm_object* list_prim(int argc, scm_object *argv[])
@@ -146,7 +148,8 @@ static scm_object* list_prim(int argc, scm_object *argv[])
 
 static scm_object* length_prim(int argc, scm_object *argv[])
 {
-    if (SCM_PAIRP(argv[0]))
-        return scm_make_integer(scm_list_length(argv[0]));
-    return scm_wrong_contract("length", "pair?", 0, argc, argv);
+    if (!SCM_PAIRP(argv[0]))
+        return scm_wrong_contract("length", "pair?", 0, argc, argv);
+
+    return scm_make_integer(scm_list_length(argv[0]));
 }

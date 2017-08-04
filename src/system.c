@@ -44,6 +44,8 @@ static scm_object* load_prim(int argc, scm_object *argv[])
     if (retcode != 0) {
         scm_print_error("open-input-file: cannot open input file\n  path: ");
         scm_print_error(filename);
+        scm_throw_error();
     }
+
     return scm_void;
 }
