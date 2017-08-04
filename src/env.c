@@ -34,6 +34,7 @@ scm_env* scm_basic_env()
 
 void scm_env_add_binding(scm_env *env, scm_symbol *id, scm_object *val)
 {
+    // TODO: high efficient!
     while (env->rest) {
         env = env->rest;
     }
@@ -46,6 +47,7 @@ void scm_env_add_binding(scm_env *env, scm_symbol *id, scm_object *val)
 
 scm_env_entry* scm_env_lookup(scm_env *env, scm_symbol *id)
 {
+    // TODO: high efficient!
     while (env) {
         if (SAME_PTR(env->id, id))
             return env;
