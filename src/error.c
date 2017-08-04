@@ -47,9 +47,22 @@ scm_object* scm_wrong_contract(const char *name, const char *expected, int index
     return NULL;
 }
 
-scm_object* scm_unmatched_arity(const char *name, int is_atleast, const char *expected, int argc, scm_object *argv[])
+scm_object* scm_mismatch_arity(scm_object *proc, int is_atleast, int expected_min, int expected_max, int argc, scm_object *argv[])
 {
-    scm_print_error(name);
+    const char *proc_name;
+    if (SCM_COMPROCP(proc)) {
+        proc_name = ((scm_compound_proc *)proc)->name;
+    } else {
+        proc_name = ((scm_primitive_proc *)proc)->name;
+    }
+
+    char expected[30];
+    if(expected_max == -1)
+        sprintf(expected, "%d", expected_min);
+    else
+        sprintf(expected, "%d to %d", expected_min, expected_max);
+
+    scm_print_error(proc_name);
     scm_print_error(": arity mismatch;\n");
     scm_print_error(" the expected number of arguments does not match the given number\n");
     scm_print_error("  expected: ");
@@ -58,7 +71,7 @@ scm_object* scm_unmatched_arity(const char *name, int is_atleast, const char *ex
     scm_print_error("\n");
     scm_print_error("  given: ");
     char nstr[10] = {0};
-    sprintf(nstr, "%d\n", nstr);
+    sprintf(nstr, "%d\n", argc);
     scm_print_error(nstr);
     if (argc > 0) {
         scm_print_error("  arguments...:\n");
