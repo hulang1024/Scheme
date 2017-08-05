@@ -36,7 +36,7 @@ void scm_init_symbol(scm_env *env)
     scm_add_prim(env, "symbol?", symbol_p_prim, 1, 1);
 }
 
-scm_object* scm_make_symbol(const char *s)
+static scm_object* scm_make_symbol(const char *s)
 {
     scm_object *o = scm_malloc_object(sizeof(scm_symbol));
     o->type = scm_symbol_type;

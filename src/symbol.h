@@ -25,7 +25,6 @@ scm_symbol *scm_for_symbol;
 
 void scm_init_symbol(scm_env *);
 scm_symbol* scm_get_intern_symbol(const char *);
-scm_object* scm_make_symbol(const char *);
 scm_object* scm_gen_symbol();
 
 #endif //SCHEME_SYMBOL_H
