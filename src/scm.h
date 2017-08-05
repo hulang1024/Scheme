@@ -1,8 +1,11 @@
 ﻿#ifndef SCM_H
 #define SCM_H
 
+//#define NDEBUG
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 enum {
     scm_integer_type = 1,
@@ -147,6 +150,5 @@ typedef struct {
 /*                      memory management macros                          */
 /* Allocation */
 #define scm_malloc_object(size) ((scm_object *)malloc(size))
-
 
 #endif //SCM_H
