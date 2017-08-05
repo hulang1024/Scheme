@@ -315,8 +315,7 @@ static int match_arity(scm_object *proc, int argc, scm_object *argv[])
             if (argc < min || argc > max)
                 scm_mismatch_arity(proc, 0, min, max, argc, argv);
         } else {
-            max = 0x3FFFFFFE;
-            if (argc < min || argc > max)
+            if (argc < min)
                 scm_mismatch_arity(proc, 1, min, -1, argc, argv);
         }
     }
@@ -325,7 +324,8 @@ static int match_arity(scm_object *proc, int argc, scm_object *argv[])
 }
 
 
-/* built-in syntax transformers */
+/*    built-in syntax transformers    */
+
 static scm_object* let_to_combination(scm_object *exp)
 {
     scm_object *bindings = scm_let_bindings(exp);
@@ -350,15 +350,14 @@ static scm_object* let_to_combination(scm_object *exp)
                        SCM_LIST2(
                            scm_make_def(scm_let_var(exp), scm_make_lambda(let_binding_vars, body)),
                            scm_make_app(scm_let_var(exp), let_binding_inits))));
-    }
-    else {
+    } else {
         return scm_make_app(
                    scm_make_lambda(let_binding_vars, body),
                    let_binding_inits);
     }
 }
 
-#define GEN_AND_OR_OR(name, val_ifnull, pred_exp) \
+#define GEN_AND_OR_OR_TRANS(name, val_ifnull, pred_exp) \
     static scm_object* name(scm_object *exp) \
     { \
         if(SCM_NULLP(SCM_CDR(exp))) \
@@ -391,5 +390,6 @@ static scm_object* let_to_combination(scm_object *exp)
         return head; \
     }
 
-GEN_AND_OR_OR(and_to_if, scm_true, scm_make_app(scm_not_symbol, SCM_LIST1(temp_var)));
-GEN_AND_OR_OR(or_to_if, scm_false, temp_var);
+GEN_AND_OR_OR_TRANS(and_to_if, scm_true, scm_make_app(scm_not_symbol, SCM_LIST1(temp_var)));
+GEN_AND_OR_OR_TRANS(or_to_if, scm_false, temp_var);
+
