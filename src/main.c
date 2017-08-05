@@ -7,13 +7,16 @@
 #include "system.h"
 #include "eval.h"
 
+char *scm_g_repl_prompt = "> ";
+
 void repl()
 {
+    puts("Welcome to scheme. ? for help");
+
     scm_object *exp, *val;
 
-    char *prompt = "> ";
     while (1) {
-        printf(prompt);
+        printf(scm_g_repl_prompt);
         exp = scm_read(scm_stdin_port);
         if (exp != NULL) {
             val = scm_eval(exp);
