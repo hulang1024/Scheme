@@ -381,6 +381,27 @@ static void skip_whitespace_comments(scm_object *port)
                 else if (scm_eofp(c))
                     return;
             }
+        } else if (c == '#') { // mutil-line comment start
+            c = scm_getc(port);
+            if (c == '|') {
+                while (1) {
+                    c = scm_getc(port);
+                    if (c == '|') {
+                        c = scm_getc(port);
+                        if (c == '#')
+                            break;
+                        else {
+                            read_error();
+                            return;
+                        }
+                    } else if (scm_eofp(c))
+                        return;
+                }
+            } else {
+                scm_ungetc(c, port);
+                scm_ungetc('#', port);
+                break;
+            }
         } else
             break;
     }
@@ -389,5 +410,5 @@ static void skip_whitespace_comments(scm_object *port)
 
 static void read_error()
 {
-    printf("read error");
+    printf("read error\n");
 }
