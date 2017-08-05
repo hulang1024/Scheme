@@ -149,4 +149,8 @@ typedef struct {
 #define scm_malloc_object(size) ((scm_object *)malloc(size))
 
 
+
+#define Scm_add_prim(env,f,min,max) scm_add_prim(env, #f, f##_prim, 0, 1)
+
+
 #endif //SCM_H
