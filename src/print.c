@@ -3,6 +3,7 @@
 #include "bool.h"
 #include "env.h"
 #include "scm.h"
+#include "pcc32.h"
 
 enum {
     DISPLAY = 0,
@@ -48,6 +49,9 @@ static void write(scm_object *port, scm_object *obj, int notdisplay)
 {
     FILE* f = ((scm_output_port *)port)->f;// TODO:
 
+    int oc = getTextColor();
+    setTextColor(notdisplay ? LIGHT_BLUE : LIGHT_MAGENTA);
+
     switch (SCM_TYPE(obj)) {
         case scm_true_type:
             fprintf(f, "#t");
@@ -78,8 +82,29 @@ static void write(scm_object *port, scm_object *obj, int notdisplay)
             }
             break;
         case scm_string_type:
-            if (notdisplay)
-                fprintf(f, "\"%s\"", SCM_CHAR_STR_VAL(obj));
+            if (notdisplay) {
+                fprintf(f, "\"");
+                char *str = SCM_CHAR_STR_VAL(obj);
+                char *sc;
+                char *ps;
+                for (sc = str; *sc; sc++) {
+                    ps = NULL;
+                    switch (*sc) {
+                        case '\a': ps = "\\a"; break;
+                        case '\b': ps = "\\b"; break;
+                        case '\f': ps = "\\f"; break;
+                        case '\n': ps = "\\n"; break;
+                        case '\r': ps = "\\r"; break;
+                        case '\t': ps = "\\t"; break;
+                        case '\v': ps = "\\v"; break;
+                    }
+                    if (ps == NULL)
+                        fprintf(f, "%c", *sc);
+                    else
+                        fprintf(f, "%s", ps);
+                }
+                fprintf(f, "\"");
+            }
             else
                 fprintf(f, "%s", SCM_CHAR_STR_VAL(obj));
             break;
@@ -105,6 +130,8 @@ static void write(scm_object *port, scm_object *obj, int notdisplay)
             break;
         default: ;
     }
+
+    setTextColor(oc);
 }
 
 static void write_list(scm_object *port, scm_object *list, int notdisplay)
