@@ -4,10 +4,16 @@
 #include "print.h"
 #include "eval.h"
 #include <setjmp.h>
+#include "pcc32.h"
 
 void scm_print_error(const char *info)
 {
+    int oc = getTextColor();
+    setTextColor(LIGHT_RED);
+
     printf("%s", info);
+
+    setTextColor(oc);
 }
 
 void scm_throw_error()
@@ -18,7 +24,7 @@ void scm_throw_error()
 scm_object* scm_wrong_contract(const char *name, const char *expected, int index, int argc, scm_object *argv[])
 {
     scm_print_error(name);
-    scm_print_error(": contract violation\n");
+    scm_print_error(": contract violation;\n");
     scm_print_error("  expected: ");
     scm_print_error(expected);
     scm_print_error("\n");
