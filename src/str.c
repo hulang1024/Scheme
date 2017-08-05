@@ -41,11 +41,11 @@ void scm_init_string(scm_env *env)
     scm_add_prim(env, "string-fill!", string_fill_prim, 2, 2);
 }
 
-scm_object* scm_make_string(char *str, int len)
+scm_object* scm_make_string(const char *str, int len)
 {
     scm_object *o = scm_malloc_object(sizeof(scm_string));
     o->type = scm_string_type;
-    SCM_CHAR_STR_VAL(o) = str;
+    SCM_CHAR_STR_VAL(o) = (char *)str;
     SCM_STR_LEN(o) = len;
     return o;
 }
@@ -67,7 +67,7 @@ static scm_object* make_string_prim(int argc, scm_object *argv[])
 
         c = SCM_CHAR_VAL(argv[1]);
     }
-    
+
     int len = SCM_INT_VAL(argv[0]);
     char *cs = malloc(sizeof(char) * len + 1);
     int i;
