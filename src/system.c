@@ -1,5 +1,8 @@
+#include <string.h>
 #include "system.h"
 #include "bool.h"
+#include "str.h"
+#include "symbol.h"
 #include "port.h"
 #include "read.h"
 #include "print.h"
@@ -7,11 +10,26 @@
 #include "eval.h"
 #include "error.h"
 
+
+static const char *help_info = "\n"
+    " (help)                  print help\n"
+    " (exit [code])           exit REPL\n"
+    " (set 'prompt <string>)  set prompt\n";
+
 static scm_object* load_prim(int, scm_object *[]);
+
+static scm_object* help_prim(int, scm_object *[]);
+static scm_object* exit_prim(int, scm_object *[]);
+static scm_object* set_prim(int, scm_object *[]);
 
 void scm_init_system(scm_env *env)
 {
     scm_add_prim(env, "load", load_prim, 1, 1);
+
+    scm_env_add_binding(env, scm_get_intern_symbol("?"), scm_make_string(help_info, sizeof(help_info)));
+    scm_add_prim(env, "help", help_prim, 0, 0);
+    scm_add_prim(env, "exit", exit_prim, 0, 1);
+    scm_add_prim(env, "set", set_prim, 2, -1);
 }
 
 int scm_load_file(const char* filename)
@@ -29,8 +47,10 @@ int scm_load_file(const char* filename)
         exp = scm_read(port);
         if (exp != NULL) {
             val = scm_eval(exp);
-            if (val != NULL && !SCM_VOIDP(val))
+            if (val != NULL && !SCM_VOIDP(val)) {
                 scm_display(scm_stdout_port, val);
+                printf("\n");
+            }
         }
     }
 
@@ -46,6 +66,50 @@ static scm_object* load_prim(int argc, scm_object *argv[])
         scm_print_error(filename);
         scm_throw_error();
     }
+
+    return scm_void;
+}
+
+static scm_object* help_prim(int argc, scm_object *argv[])
+{
+    printf("%s\n", help_info);
+    return scm_void;
+}
+
+static scm_object* exit_prim(int argc, scm_object *argv[])
+{
+    int code = 0;
+    if (argc > 0) {
+        if (!SCM_INTEGERP(argv[0]))
+            return scm_wrong_contract("exit", "integer?", 0, argc, argv);
+        code = SCM_INT_VAL(argv[0]);
+    }
+    exit(code);
+    return scm_void;
+}
+
+static scm_object* set_prim(int argc, scm_object *argv[])
+{
+    if (!SCM_SYMBOLP(argv[0]))
+        return scm_wrong_contract("set", "symbol?", 0, argc, argv);
+
+    const char *name = SCM_SYMBOL_STR_VAL(argv[0]);
+
+    int ok = 0;
+    char *fail_cause = NULL;
+
+    if (stricmp(name, "prompt") == 0) {
+        if (SCM_STRINGP(argv[1])) {
+            scm_g_repl_prompt = SCM_CHAR_STR_VAL(argv[1]);
+            ok = 1;
+        } else
+            fail_cause = "argument is not string.";
+    } else {
+        fail_cause = "error option.";
+    }
+
+    if (!ok)
+        printf("set failed, %s\n", fail_cause);
 
     return scm_void;
 }
