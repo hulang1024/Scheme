@@ -105,7 +105,7 @@ static scm_object* eval(scm_object *exp, scm_env *env)
                 scm_print_error("  in: ");
                 scm_write(scm_stdout_port, exp);
                 scm_print_error("\n");
-                scm_throw_error();
+                scm_throw_eval_error();
                 return NULL;
             }
             scm_symbol *operator = (scm_symbol *) scm_operator(exp);
@@ -173,7 +173,7 @@ static scm_object* eval(scm_object *exp, scm_env *env)
             } else {
                 scm_print_error("application: not a procedure;\n"\
                     " expected a procedure that can be applied to arguments\n");
-                scm_throw_error();
+                scm_throw_eval_error();
             }
             break;
         }
@@ -227,7 +227,7 @@ static scm_object* eval_lambda(scm_object *exp, scm_env *env)
         scm_print_error("  in: ");
         scm_write(scm_stdout_port, exp);
         scm_print_error("\n");
-        scm_throw_error();
+        scm_throw_eval_error();
     }
 
     return (scm_object *)proc;
