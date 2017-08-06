@@ -16,7 +16,7 @@ void scm_print_error(const char *info)
     setTextColor(oc);
 }
 
-void scm_throw_error()
+void scm_throw_eval_error()
 {
     longjmp(eval_error_jmp_buf, 1);
 }
@@ -48,7 +48,7 @@ scm_object* scm_wrong_contract(const char *name, const char *expected, int index
         }
     }
 
-    scm_throw_error();
+    scm_throw_eval_error();
 
     return NULL;
 }
@@ -88,8 +88,8 @@ scm_object* scm_mismatch_arity(scm_object *proc, int is_atleast, int expected_mi
             scm_print_error("\n");
         }
     }
-    
-    scm_throw_error();
+
+    scm_throw_eval_error();
 
     return NULL;
 }
@@ -98,8 +98,8 @@ scm_object* scm_undefined_identifier(scm_symbol *id)
 {
     scm_print_error((char*)SCM_SYMBOL_STR_VAL(id));
     scm_print_error(": undefined;\n cannot reference undefined identifier\n");
-    
-    scm_throw_error();
+
+    scm_throw_eval_error();
     
     return NULL;
 }
@@ -150,7 +150,7 @@ scm_object* scm_out_of_range(const char *name, scm_object *obj, int start, int e
         scm_print_error(info);
     }
 
-    scm_throw_error();
+    scm_throw_eval_error();
     
     return NULL;
 }
