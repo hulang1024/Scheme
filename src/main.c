@@ -18,9 +18,9 @@ void repl()
     while (1) {
         printf(scm_g_repl_prompt);
         exp = scm_read(scm_stdin_port);
-        if (exp != NULL) {
+        if (exp) {
             val = scm_eval(exp);
-            if (val != NULL && !SCM_VOIDP(val)) {
+            if (val && !SCM_VOIDP(val)) {
                 scm_write(scm_stdout_port, val);
                 putchar('\n');
             }
