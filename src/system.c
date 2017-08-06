@@ -1,6 +1,8 @@
+#include <time.h>
 #include <string.h>
 #include "system.h"
 #include "bool.h"
+#include "number.h"
 #include "str.h"
 #include "symbol.h"
 #include "port.h"
@@ -12,22 +14,27 @@
 
 
 static const char *help_info = "\n"
-    " (help)                  print help\n"
+    " (?)                     print help\n"
     " (exit [code])           exit REPL\n"
     " (set 'prompt <string>)  set prompt\n";
 
 static scm_object* load_prim(int, scm_object *[]);
-
+static scm_object* time_prim(int, scm_object *[]);
+static scm_object* rand_prim(int, scm_object *[]);
 static scm_object* help_prim(int, scm_object *[]);
 static scm_object* exit_prim(int, scm_object *[]);
 static scm_object* set_prim(int, scm_object *[]);
 
 void scm_init_system(scm_env *env)
 {
+    srand((unsigned)time(NULL));
+
     scm_add_prim(env, "load", load_prim, 1, 1);
 
-    scm_env_add_binding(env, scm_get_intern_symbol("?"), scm_make_string(help_info, sizeof(help_info)));
-    scm_add_prim(env, "help", help_prim, 0, 0);
+    scm_add_prim(env, "time", time_prim, 0, 0);
+    scm_add_prim(env, "rand", rand_prim, 0, 0);
+
+    scm_add_prim(env, "?", help_prim, 0, 0);
     scm_add_prim(env, "exit", exit_prim, 0, 1);
     scm_add_prim(env, "set", set_prim, 2, -1);
 }
@@ -68,6 +75,16 @@ static scm_object* load_prim(int argc, scm_object *argv[])
     }
 
     return scm_void;
+}
+
+static scm_object* time_prim(int argc, scm_object *argv[])
+{
+    return scm_make_integer(time(NULL));
+}
+
+static scm_object* rand_prim(int argc, scm_object *argv[])
+{
+    return scm_make_integer(rand());
 }
 
 static scm_object* help_prim(int argc, scm_object *argv[])
