@@ -141,7 +141,7 @@ static void write_list(scm_object *port, scm_object *list, int notdisplay)
     fprintf(f, "(");
     while (!SCM_NULLP(list)) {
         if (SCM_PAIRP(list)) {
-            scm_write(port, SCM_CAR(list));
+            write(port, SCM_CAR(list), notdisplay);
             if (!SCM_NULLP(SCM_CDR(list))) {
                 fprintf(f, " ");
                 list = SCM_CDR(list);
