@@ -11,7 +11,7 @@ char *scm_g_repl_prompt = "> ";
 
 void repl()
 {
-    puts("Welcome to scheme. ? for help");
+    puts("Welcome to scheme. github.com/hlpp/scheme, (?) for help");
 
     scm_object *exp, *val;
 
