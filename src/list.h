@@ -21,7 +21,9 @@
 #define SCM_CDADR(o) SCM_CDR(SCM_CADR(o))
 #define SCM_CADDDR(o) SCM_CAR(SCM_CDDDR(o))
 
+/* list ::  proper list */
 #define scm_list_for_each(list) \
+    assert(scm_is_list(list)); \
     for (; !SCM_NULLP(list); list = SCM_CDR(list))
 
 extern scm_object scm_null[];
