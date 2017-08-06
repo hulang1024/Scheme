@@ -60,7 +60,7 @@ scm_symbol* scm_get_intern_symbol(const char *str)
         syms = SCM_CDR(syms);
     }
     // if not interned
-    sym = (scm_symbol *)scm_make_symbol(str);
+    sym = (scm_symbol *)scm_make_symbol((char*)str);
     intern_symbol(sym);
     return sym;
 }
