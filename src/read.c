@@ -1,3 +1,4 @@
+#include <setjmp.h>
 #include <ctype.h>
 #include <string.h>
 #include "read.h"
@@ -8,9 +9,9 @@
 #include "symbol.h"
 #include "list.h"
 #include "env.h"
-#include "scm.h"
+#include "error.h"
 
-scm_object* scm_read(scm_object *);
+scm_object* read(scm_object *);
 static scm_object* read_char(scm_object *);
 static scm_object* read_string(scm_object *);
 static scm_object* read_number(scm_object *, char, int);
@@ -18,13 +19,15 @@ static scm_object* read_symbol(scm_object *, int);
 static scm_object* read_quote(scm_object *);
 static scm_object* read_list(scm_object *);
 static void skip_whitespace_comments(scm_object *);
-static void read_error();
+static scm_object* read_error(const char *s);
 
 static scm_object* read_prim(int, scm_object *[]);
 
 /* c :: int */
 #define isodigit(c) ('0' <= (c) && (c) <= '7')
 #define is_dbcs_lead_byte(c) ((c) < 0 || (c) > 127)
+
+jmp_buf read_error_jmp_buf;
 
 int isdelimiter(int c)
 {
@@ -80,15 +83,23 @@ void scm_init_read(scm_env *env)
     scm_add_prim(env, "read", read_prim, 0, 1);
 }
 
-static scm_object* read_prim(int argc, scm_object *argv[])
-{
-    return scm_read(scm_stdin_port);
-}
-
 scm_object* scm_read(scm_object *port)
 {
+    if (setjmp(read_error_jmp_buf) == 1) {
+        return NULL;
+    }
+    return read(port); // TODO: Unicode
+}
+
+static scm_object* read_prim(int argc, scm_object *argv[])
+{
+    return read(scm_stdin_port);
+}
+
+scm_object* read(scm_object *port)
+{
     scm_object *obj = NULL;
-    int c; // char可存储ASCII，但是非为可以接收EOF（-1）
+    int c; // 可以接收EOF（-1）
 
     skip_whitespace_comments(port);
 
@@ -155,7 +166,7 @@ scm_object* scm_read(scm_object *port)
 
 static scm_object* read_quote(scm_object *port)
 {
-    return cons((scm_object *)scm_quote_symbol, cons(scm_read(port), scm_null));
+    return cons((scm_object *)scm_quote_symbol, cons(read(port), scm_null));
 }
 
 static scm_object* read_list(scm_object *port)
@@ -167,31 +178,39 @@ static scm_object* read_list(scm_object *port)
 
     while (1) {
         c = scm_getc(port);
-        if(c == ')' || c == ']' || c == '}' || scm_eofp(c))
+        if (c == ')' || c == ']' || c == '}' || scm_eofp(c)) {
+           if (found_dot && found_dot != 2) // 如果读序对的'.，但没有读到cdr
+               return read_error("unexpected `)'");
             break;
+        }
 
         scm_ungetc(c, port);
-        o = scm_read(port);
+        o = read(port);
         skip_whitespace_comments(port);
 
-        if (prev != NULL) {
-            if (NOT_SAME_OBJ(o, (scm_object *)scm_dot_symbol)) {
-                if (!found_dot) {
+        if (prev) {
+            if (SAME_OBJ(o, (scm_object *)scm_dot_symbol)) {
+                if (found_dot) // 如果不是: 预期已读到至少一个car (prev != NULL)，并没有读到过'.
+                    return read_error("illegal use of `.'");
+                found_dot = 1; // 找到'.，预期读一个cdr
+            } else {
+                if (found_dot) {
+                    SCM_CDR(prev) = o;
+                    found_dot = 2; // '.已读一个cdr
+                } else {
                     curr = cons(o, scm_null);
                     SCM_CDR(prev) = curr;
                     prev = curr;
-                } else {
-                    SCM_CDR(prev) = o;
                 }
-            } else {
-                found_dot = 1;
             }
         } else {
+            if (SAME_OBJ(o, (scm_object *)scm_dot_symbol))
+                return read_error("illegal use of `.'");
             head = prev = cons(o, scm_null);
         }
     }
 
-    if (!SCM_NULLP(head) && (!found_dot || SCM_NULLP(curr))) {
+    if (!SCM_NULLP(head) && !found_dot) {
         SCM_PAIR_FLAGS(head) |= SCM_PAIR_IS_LIST;
     }
     return head;
@@ -255,8 +274,8 @@ static scm_object* read_number(scm_object *port, char radixc, int sign)
                 if (isdigit(c)) {
                     APPEND_CH(c);
                 } else if (c == '.') {
-                    if(dot) {
-                        read_error();
+                    if(dot) { // 类似1..a，是一个合法标识符，但我们不支持
+                        read_error("bad syntax");
                         return NULL;
                     }
                     dot = 1;
@@ -284,7 +303,7 @@ static scm_object* read_number(scm_object *port, char radixc, int sign)
         case 'X':
             // radix 16
         default:
-            read_error();
+            read_error("bad syntax");
             return NULL;
     }
 }
@@ -397,10 +416,6 @@ static void skip_whitespace_comments(scm_object *port)
                         c = scm_getc(port);
                         if (c == '#')
                             break;
-                        else {
-                            read_error();
-                            return;
-                        }
                     } else if (scm_eofp(c))
                         return;
                 }
@@ -415,7 +430,13 @@ static void skip_whitespace_comments(scm_object *port)
     scm_ungetc(c, port);
 }
 
-static void read_error()
+static scm_object* read_error(const char *s)
 {
-    printf("read error\n");
+    scm_print_error("read: ");
+    scm_print_error(s == NULL ? "error" : s);
+    scm_print_error("\n");
+
+    longjmp(read_error_jmp_buf, 1);
+
+    return NULL;
 }
