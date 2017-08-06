@@ -3,7 +3,7 @@
 
 #include "scm.h"
 
-void scm_print_error(const char *info);
+void scm_print_error(const char *);
 
 scm_object* scm_wrong_contract(const char *, const char *, int, int, scm_object *[]);
 scm_object* scm_mismatch_arity(scm_object *, int, int, int, int, scm_object *[]);

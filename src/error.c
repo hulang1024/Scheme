@@ -68,7 +68,7 @@ scm_object* scm_mismatch_arity(scm_object *proc, int is_atleast, int expected_mi
     else
         sprintf(expected, "%d to %d", expected_min, expected_max);
 
-    scm_print_error(proc_name);
+    scm_print_error((char*)proc_name);
     scm_print_error(": arity mismatch;\n");
     scm_print_error(" the expected number of arguments does not match the given number\n");
     scm_print_error("  expected: ");
@@ -96,7 +96,7 @@ scm_object* scm_mismatch_arity(scm_object *proc, int is_atleast, int expected_mi
 
 scm_object* scm_undefined_identifier(scm_symbol *id)
 {
-    scm_print_error(SCM_SYMBOL_STR_VAL(id));
+    scm_print_error((char*)SCM_SYMBOL_STR_VAL(id));
     scm_print_error(": undefined;\n cannot reference undefined identifier\n");
     
     scm_throw_error();
