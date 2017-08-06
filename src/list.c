@@ -52,6 +52,9 @@ scm_object* scm_make_pair(scm_object *car, scm_object *cdr)
     return pair;
 }
 
+/*
+ * 返回具有一个“是表”标记的序对（但不在结尾增加空表）
+ */
 scm_object* scm_make_list_pair(scm_object *car, scm_object *cdr)
 {
   scm_object *r = scm_make_pair(car, cdr);
@@ -65,7 +68,7 @@ scm_object* scm_build_list(int size, scm_object **argv)
     int i;
 
     for (i = size; i--; ) {
-        pair = SCM_CONS(argv[i], pair);
+        pair = SCM_LCONS(argv[i], pair); /* using SCM_LCONS ! */
     }
 
     return pair;
