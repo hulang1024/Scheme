@@ -1,0 +1,25 @@
+(define (compose f g)
+  (lambda (x) (f (g x))))
+
+(define (repeated f n)
+  (if (= n 1)
+      (lambda (x) (f x))
+      (compose (lambda (x) (f x))
+               (repeated f (- n 1)))))
+
+((repeated square 3) 2)
+
+(compose (lambda (x) (square x))
+         (repeated square 2))
+(compose (lambda (x) (square x))
+         (compose (lambda (x) (square x))
+                  (repeated square 1)))
+(compose (lambda (x) (square x))
+         (compose (lambda (x) (square x))
+                  (lambda (x) (square x))))
+(compose (lambda (x) (square x))
+         (lambda (x) ((lambda (x) (square x)) ((lambda (x) (square x)) x))))
+((lambda (x) ((lambda (x) (square x))
+             ((lambda (x) ((lambda (x) (square x)) ((lambda (x) (square x)) x))) x)))
+ 2)
+        
