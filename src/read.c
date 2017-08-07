@@ -172,8 +172,8 @@ static scm_object* read_quote(scm_object *port)
 static scm_object* read_list(scm_object *port)
 {
     scm_object *head = scm_null, *prev = NULL, *curr;
+    scm_object *obj;
     int found_dot = 0;
-    scm_object *o;
     int c;
 
     while (1) {
@@ -185,32 +185,33 @@ static scm_object* read_list(scm_object *port)
         }
 
         scm_ungetc(c, port);
-        o = read(port);
+        obj = read(port);
         skip_whitespace_comments(port);
 
         if (prev) {
-            if (SAME_OBJ(o, (scm_object *)scm_dot_symbol)) {
-                if (found_dot) // 如果不是: 预期已读到至少一个car (prev != NULL)，并没有读到过'.
+            if (SAME_OBJ(obj, (scm_object *)scm_dot_symbol)) {
+                if (found_dot) // 如果不是: 预期已读到至少一个car (prev != NULL)，并且没有读到过'.
                     return read_error("illegal use of `.'");
                 found_dot = 1; // 找到'.，预期读一个cdr
             } else {
                 if (found_dot) {
-                    SCM_CDR(prev) = o;
+                    SCM_CDR(prev) = obj;
+                    prev = obj;
                     found_dot = 2; // '.已读一个cdr
                 } else {
-                    curr = cons(o, scm_null);
+                    curr = cons(obj, scm_null);
                     SCM_CDR(prev) = curr;
                     prev = curr;
                 }
             }
         } else {
-            if (SAME_OBJ(o, (scm_object *)scm_dot_symbol))
+            if (SAME_OBJ(obj, (scm_object *)scm_dot_symbol))
                 return read_error("illegal use of `.'");
-            head = prev = cons(o, scm_null);
+            head = prev = cons(obj, scm_null);
         }
     }
 
-    if (!SCM_NULLP(head) && !found_dot) {
+    if (!SCM_NULLP(head) && (!found_dot || SCM_NULLP(prev))) {
         SCM_PAIR_FLAGS(head) |= SCM_PAIR_IS_LIST;
     }
     return head;
