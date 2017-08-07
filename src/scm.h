@@ -1,4 +1,4 @@
-﻿#ifndef SCM_H
+#ifndef SCM_H
 #define SCM_H
 
 #include <stdio.h>
@@ -147,10 +147,6 @@ typedef struct {
 /*                      memory management macros                          */
 /* Allocation */
 #define scm_malloc_object(size) ((scm_object *)malloc(size))
-
-
-
-#define Scm_add_prim(env,f,min,max) scm_add_prim(env, #f, f##_prim, 0, 1)
 
 
 #endif //SCM_H
