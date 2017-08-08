@@ -422,7 +422,6 @@ static void skip_whitespace_comments(scm_object *port)
                 }
             } else {
                 scm_ungetc(c, port);
-                scm_ungetc('#', port);
                 break;
             }
         } else

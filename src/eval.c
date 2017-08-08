@@ -80,6 +80,7 @@ static scm_object* eval_prim(int argc, scm_object *argv[])
 static scm_object* eval(scm_object *exp, scm_env *env)
 {
     EVAL:
+    // 根据表达式类型dispatch动作
     switch (SCM_TYPE(exp)) {
         case scm_true_type:
         case scm_false_type:
@@ -88,9 +89,11 @@ static scm_object* eval(scm_object *exp, scm_env *env)
         case scm_char_type:
         case scm_string_type:
         case scm_void_type:
+            // self evaluating
             return exp;
             
         case scm_symbol_type: {
+            // 是符号，查询在环境中关联的值
             scm_env_entry *entry = scm_env_lookup(env, (scm_symbol *) exp);
             if (entry != NULL) {
                 return entry->val;
@@ -109,30 +112,39 @@ static scm_object* eval(scm_object *exp, scm_env *env)
                 return NULL;
             }
             scm_symbol *operator = (scm_symbol *) scm_operator(exp);
+            // 如果运算符为符号，可能是语法关键字
             if (SCM_SYMBOLP(operator)) {
                 if (SAME_OBJ(operator, scm_quote_symbol))
+                    // eval quotation
                     return scm_quoted_object(exp);
                 if (SAME_OBJ(operator, scm_define_symbol))
                     return eval_definition(exp, env);
                 if (SAME_OBJ(operator, scm_lambda_symbol))
                     return eval_lambda(exp, env);
                 if (SAME_OBJ(operator, scm_begin_symbol)) {
+                    /* 求值顺序表达式/序列 */
                     scm_object *exps = scm_begin_actions(exp);
                     if (! SCM_NULLP(exps)) {
+                        // 顺序求值尾部前面的表达式
                         for(; ! SCM_NULLP( SCM_CDR(exps) ); exps = SCM_CDR(exps) )
                             eval(SCM_CAR(exps), env);
+                        // 迭代求值尾上下文中的表达式
                         EVAL(SCM_CAR(exps));
                     } else {
                         return scm_void;
                     }
                 }
                 if (SAME_OBJ(operator, scm_if_symbol)) {
+                    /* 求值if表达式 */
                     scm_object *optionalAlt;
+                    // 首先求值谓词表达式
+                    // 然后继续判断谓词的值：如果为真，返回迭代求值后件，否则迭代求值前件
                     EVAL(SCM_TRUEP( eval(scm_if_predicate(exp), env) ) ?
                           scm_if_consequent(exp) : (optionalAlt = scm_if_alternative(exp),
                                                     SCM_NULLP(optionalAlt) ? scm_void : optionalAlt));
                 }
                 if (SAME_OBJ(operator, scm_let_symbol)) {
+                    /* let在语法上变换到lambda */
                     EVAL(let_to_combination(exp));
                 }
                 if (SAME_OBJ(operator, scm_and_symbol)) {
@@ -151,8 +163,12 @@ static scm_object* eval(scm_object *exp, scm_env *env)
                     return eval_assignment(exp, env);
             }
 
+            /* 另外，是符号但不是语法关键字，或者不是符号，就是过程调用表达式：*/
+            // 首先求值运算符，得到过程对象
             scm_object *proc = eval((scm_object *) operator, env);
             scm_object *operands = scm_operands(exp);
+
+            // 然后求值运算数，得到实际参数
             //array of values
             //TODO: O(n)
             scm_object **argv = malloc(sizeof(scm_object *) * scm_list_length(operands));
@@ -162,12 +178,16 @@ static scm_object* eval(scm_object *exp, scm_env *env)
             }
 
             if (SCM_PRIMPROCP(proc)) {
+                // 检查实参个数是否匹配形参个数
                 if (match_arity(proc, argc, argv))
                     return apply_primitive_procedure(proc, argc, argv);
             } else if (SCM_COMPROCP(proc)) {
                 if (match_arity(proc, argc, argv)) {
+                    // 将过程体转换为begin类型表达式
                     exp = scm_make_begin(((scm_compound_proc *)proc)->body);
+                    // 构造一个用于执行过程调用的新环境
                     env = make_apply_env((scm_compound_proc *)proc, argc, argv);
+                    // 在新环境上下文中迭代求值过程体。注意这里没有去递归调用eval，上同
                     goto EVAL;
                 }
             } else {
@@ -178,6 +198,8 @@ static scm_object* eval(scm_object *exp, scm_env *env)
             break;
         }
         case scm_null_type:
+            scm_print_error("application: illegal empty application;\n");
+            scm_throw_eval_error();
             break;
         default: ;
     }
@@ -283,6 +305,7 @@ static scm_env* make_apply_env(scm_compound_proc *proc, int argc, scm_object *ar
                 scm_env_add_binding(apply_env, (scm_symbol *)proc->params[0], scm_build_list(argc, argv));
             }
         }
+        // 将创建该过程时的环境作为外围环境
         // TODO: high efficient!
         scm_env *base_env = apply_env;
         while (base_env->rest)

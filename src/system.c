@@ -63,9 +63,15 @@ int scm_load_file(const char* filename)
     scm_object *port = scm_make_file_input_port(file);
     scm_object *exp, *val;
     int ch;
+<<<<<<< HEAD
 
     get_skip_encoding_marks(port);
 
+=======
+
+    get_skip_encoding_marks(port);
+
+>>>>>>> 625dcf2d78cf0a8fe87790a0cb336d4895da2f31
     while (!scm_eofp(ch = scm_getc(port))) {
         scm_ungetc(ch, port);
         exp = scm_read(port);
@@ -81,6 +87,8 @@ int scm_load_file(const char* filename)
     }
 
     scm_close_input_port(port);
+
+    return 0;
 }
 
 static scm_object* load_prim(int argc, scm_object *argv[])
@@ -92,11 +100,70 @@ static scm_object* load_prim(int argc, scm_object *argv[])
         scm_print_error(filename);
         scm_print_error("\n");
         scm_throw_eval_error();
+<<<<<<< HEAD
     }
 
     return scm_void;
 }
 
+static scm_object* time_prim(int argc, scm_object *argv[])
+{
+    return scm_make_integer(time(NULL));
+}
+
+static scm_object* rand_prim(int argc, scm_object *argv[])
+{
+    return scm_make_integer(rand());
+}
+
+static scm_object* help_prim(int argc, scm_object *argv[])
+{
+    printf("%s\n", help_info);
+    return scm_void;
+}
+
+static scm_object* exit_prim(int argc, scm_object *argv[])
+{
+    int code = 0;
+    if (argc > 0) {
+        if (!SCM_INTEGERP(argv[0]))
+            return scm_wrong_contract("exit", "integer?", 0, argc, argv);
+        code = SCM_INT_VAL(argv[0]);
+    }
+    exit(code);
+    return scm_void;
+}
+
+static scm_object* set_prim(int argc, scm_object *argv[])
+{
+    if (!SCM_SYMBOLP(argv[0]))
+        return scm_wrong_contract("set", "symbol?", 0, argc, argv);
+
+    const char *name = SCM_SYMBOL_STR_VAL(argv[0]);
+
+    int ok = 0;
+    char *fail_cause = NULL;
+
+    if (stricmp(name, "prompt") == 0) {
+        if (SCM_STRINGP(argv[1])) {
+            scm_g_repl_prompt = SCM_CHAR_STR_VAL(argv[1]);
+            ok = 1;
+        } else
+            fail_cause = "argument is not string.";
+    } else {
+        fail_cause = "error option.";
+=======
+>>>>>>> 625dcf2d78cf0a8fe87790a0cb336d4895da2f31
+    }
+
+    if (!ok)
+        printf("set failed, %s\n", fail_cause);
+
+    return scm_void;
+}
+
+<<<<<<< HEAD
+=======
 static scm_object* time_prim(int argc, scm_object *argv[])
 {
     return scm_make_integer(time(NULL));
@@ -151,6 +218,7 @@ static scm_object* set_prim(int argc, scm_object *argv[])
     return scm_void;
 }
 
+>>>>>>> 625dcf2d78cf0a8fe87790a0cb336d4895da2f31
 static int get_skip_encoding_marks(scm_object *port)
 {
     int bytes[4] = {0x100};
@@ -169,7 +237,11 @@ static int get_skip_encoding_marks(scm_object *port)
         encoding = ENCODING_UTF_32LE;
         unread_bytes = read_bytes - 4;
     } else if ((bytes[0] == 0x2B) && (bytes[1] == 0x2F) && (bytes[2] == 0x76)
+<<<<<<< HEAD
                && (bytes[3] == 0x38 || bytes[3] == 0x39 || bytes[3] == 0x2B || bytes[3] == 0x2F)) {
+=======
+        && (bytes[3] == 0x38 || bytes[3] == 0x39 || bytes[3] == 0x2B || bytes[3] == 0x2F)) {
+>>>>>>> 625dcf2d78cf0a8fe87790a0cb336d4895da2f31
         encoding = ENCODING_UTF_7;
         unread_bytes = read_bytes - 4;
     } else if ((bytes[0] == 0x84) && (bytes[1] == 0x31) && (bytes[2] == 0x95) && (bytes[3] == 0x33)) {
