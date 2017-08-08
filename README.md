@@ -55,6 +55,8 @@ Scheme编程语言的解释器。
         `read`,`write`,`newline`,`display`
     + 系统接口  
         `load`,`time`,`rand`,`?`,`exit`,`set`
+    + 内置扩展  
+        * Win32 Console Control 见[/src/lib/libpcc32.c](src/lib/libpcc32.c), 例子见`/tests/pcc32/`
 * 注释  
   单行注释: `; ...`  
   多行注释: `#| ... |#`

@@ -57,8 +57,12 @@ int scm_load_file(const char* filename)
 {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
+        scm_print_error("open-input-file: cannot open input file\n  path: ");
+        scm_print_error(filename);
+        scm_print_error("\n");
         return -1;
     }
+
     scm_object *port = scm_make_file_input_port(file);
     scm_object *exp, *val;
     int ch;
@@ -67,16 +71,18 @@ int scm_load_file(const char* filename)
 
     while (!scm_eofp(ch = scm_getc(port))) {
         scm_ungetc(ch, port);
+        val = NULL;
         exp = scm_read(port);
         if (!exp) // 如果遇到错误，中止执行
             break;
         val = scm_eval(exp);
         if (!val) // 同上
             break;
-        if (!SCM_VOIDP(val)) {
-            scm_write(scm_stdout_port, val); // 默认用write
-            printf("\n");
-        }
+    }
+
+    if (val && !SCM_VOIDP(val)) {
+        scm_write(scm_stdout_port, val); // 默认用write
+        printf("\n");
     }
 
     scm_close_input_port(port);
@@ -89,9 +95,6 @@ static scm_object* load_prim(int argc, scm_object *argv[])
     char* filename = SCM_CHAR_STR_VAL(argv[0]);
     int retcode = scm_load_file(filename);
     if (retcode != 0) {
-        scm_print_error("open-input-file: cannot open input file\n  path: ");
-        scm_print_error(filename);
-        scm_print_error("\n");
         scm_throw_eval_error();
     }
 

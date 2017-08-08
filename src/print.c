@@ -5,6 +5,8 @@
 #include "scm.h"
 #include "pcc32.h"
 
+#define WRITE_TEXT_COLOR LIGHT_BLUE
+#define DISPLAY_TEXT_COLOR LIGHT_MAGENTA
 enum {
     DISPLAY = 0,
     WRITE = 1
@@ -25,12 +27,22 @@ void scm_init_print(scm_env *env)
 
 void scm_write(scm_object *port, scm_object *obj)
 {
+    int oc = getTextColor();
+    setTextColor(WRITE_TEXT_COLOR); // 仅交互调用时设置颜色
+
     write(port, obj, WRITE);
+
+    setTextColor(oc);
 }
 
 void scm_display(scm_object *port, scm_object *obj)
 {
+    int oc = getTextColor();
+    setTextColor(DISPLAY_TEXT_COLOR);
+
     write(port, obj, DISPLAY);
+
+    setTextColor(oc);
 }
 
 static scm_object* write_prim(int argc, scm_object *argv[])
@@ -48,9 +60,6 @@ static scm_object* display_prim(int argc, scm_object *argv[])
 static void write(scm_object *port, scm_object *obj, int notdisplay)
 {
     FILE* f = ((scm_output_port *)port)->f;// TODO:
-
-    int oc = getTextColor();
-    setTextColor(notdisplay ? LIGHT_BLUE : LIGHT_MAGENTA);
 
     switch (SCM_TYPE(obj)) {
         case scm_true_type:
@@ -130,8 +139,6 @@ static void write(scm_object *port, scm_object *obj, int notdisplay)
             break;
         default: ;
     }
-
-    setTextColor(oc);
 }
 
 static void write_list(scm_object *port, scm_object *list, int notdisplay)
