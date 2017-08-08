@@ -400,15 +400,28 @@ static void skip_whitespace_comments(scm_object *port)
         c = scm_getc(port);
         if (isspace(c))
             continue;
-        else if (c == ';') {
-            while(1) {
-                c = scm_getc(port);
-                if (c == '\n' || c == '\r')
-                    break;
-                else if (scm_eofp(c))
-                    return;
-            }
-        } else if (c == '#') { // mutil-line comment start
+        else if (c == ';') { // ;single-line comment or ;|multi-line comments|; start
+			c1 = scm_getc(port);
+			if (c1 == '|') {					
+				while (1) {
+					c = scm_getc(port);
+					if (c == '|') {
+						c = scm_getc(port);
+						if (c == ';')
+							break;
+					}else if (scm_eofp(c))
+						return;
+				}
+			}else {					
+				while(1) {
+					c = scm_getc(port);
+					if (c == '\n' || c == '\r')
+						break;
+					else if (scm_eofp(c))
+						return;
+				}				
+			}
+        } else if (c == '#') { // #|multi-line comments|# start
             c = scm_getc(port);
             if (c == '|') {
                 while (1) {
@@ -422,7 +435,6 @@ static void skip_whitespace_comments(scm_object *port)
                 }
             } else {
                 scm_ungetc(c, port);
-                scm_ungetc('#', port);
                 break;
             }
         } else

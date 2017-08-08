@@ -1,4 +1,4 @@
-﻿#ifndef SCM_H
+#ifndef SCM_H
 #define SCM_H
 
 //#define NDEBUG
