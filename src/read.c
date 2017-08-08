@@ -395,47 +395,37 @@ static scm_object* read_string(scm_object *port)
 
 static void skip_whitespace_comments(scm_object *port)
 {
-    int c;
+    int c, c1;
     while (1) {
         c = scm_getc(port);
-        if (isspace(c))
+        if (isspace(c)) {
             continue;
-        else if (c == ';') { // ;single-line comment or ;|multi-line comments|; start
-			c1 = scm_getc(port);
-			if (c1 == '|') {					
-				while (1) {
-					c = scm_getc(port);
-					if (c == '|') {
-						c = scm_getc(port);
-						if (c == ';')
-							break;
-					}else if (scm_eofp(c))
-						return;
-				}
-			}else {					
-				while(1) {
-					c = scm_getc(port);
-					if (c == '\n' || c == '\r')
-						break;
-					else if (scm_eofp(c))
-						return;
-				}				
-			}
-        } else if (c == '#') { // #|multi-line comments|# start
-            c = scm_getc(port);
-            if (c == '|') {
+        } else if ((c == ';') || (c == '#')) { // comment start
+            int comment_flag = c;
+            c1 = scm_getc(port);
+            if (c1 == '|') {
                 while (1) {
                     c = scm_getc(port);
                     if (c == '|') {
                         c = scm_getc(port);
-                        if (c == '#')
+                        if (c == comment_flag)
                             break;
                     } else if (scm_eofp(c))
                         return;
                 }
             } else {
-                scm_ungetc(c, port);
-                break;
+                if (comment_flag == ';') {
+                    while (1) {
+                        c = scm_getc(port);
+                        if (c == '\n' || c == '\r')
+                            break;
+                        else if (scm_eofp(c))
+                            return;
+                    }
+                }else if (comment_flag == '#') {
+                    scm_ungetc(c1, port);
+                    break;
+                }
             }
         } else
             break;
