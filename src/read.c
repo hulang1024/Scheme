@@ -396,7 +396,7 @@ static scm_object* read_string(scm_object *port)
 
 static void skip_whitespace_comments(scm_object *port)
 {
-    int c;
+    int c, c1;
     while (1) {
         c = scm_getc(port);
         if (isspace(c))
@@ -410,8 +410,8 @@ static void skip_whitespace_comments(scm_object *port)
                     return;
             }
         } else if (c == '#') { // mutil-line comment start
-            c = scm_getc(port);
-            if (c == '|') {
+            c1 = scm_getc(port);
+            if (c1 == '|') {
                 while (1) {
                     c = scm_getc(port);
                     if (c == '|') {
@@ -422,8 +422,7 @@ static void skip_whitespace_comments(scm_object *port)
                         return;
                 }
             } else {
-                scm_ungetc(c, port);
-                scm_ungetc('#', port);
+                scm_ungetc(c1, port);
                 break;
             }
         } else

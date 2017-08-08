@@ -41,33 +41,33 @@ int scm_equal(scm_object *x, scm_object *y)
 {
     if (!SCM_SAME_TYPE(SCM_TYPE(x), SCM_TYPE(y))) // types: true, false, void, null, ...
         return 0;
-    
+
     switch (SCM_TYPE(x)) {
-        case scm_integer_type:
-            return SCM_INT_VAL(x) == SCM_INT_VAL(y);
-        case scm_float_type:
-            return SCM_FLOAT_VAL(x) == SCM_FLOAT_VAL(y);
-        case scm_char_type:
-            return SCM_CHAR_VAL(x) == SCM_CHAR_VAL(y);
-        case scm_string_type:
-            return strcmp(SCM_CHAR_STR_VAL(x), SCM_CHAR_STR_VAL(y)) == 0;
-        case scm_symbol_type:
-        case scm_true_type:
-        case scm_false_type:
-        case scm_pair_type:
-            // TODO: equal of pair
-        case scm_null_type:
-        case scm_void_type:
-        case scm_primitive_type:
-        case scm_compound_type:
-        case scm_input_port_type:
-        case scm_output_port_type:
-        case scm_namespace_type:
-        default:
-            if (!SAME_OBJ(x, y))
-                return 0;
-            else
-                return 1;
+    case scm_integer_type:
+        return SCM_INT_VAL(x) == SCM_INT_VAL(y);
+    case scm_float_type:
+        return SCM_FLOAT_VAL(x) == SCM_FLOAT_VAL(y);
+    case scm_char_type:
+        return SCM_CHAR_VAL(x) == SCM_CHAR_VAL(y);
+    case scm_string_type:
+        return strcmp(SCM_CHAR_STR_VAL(x), SCM_CHAR_STR_VAL(y)) == 0;
+    case scm_symbol_type:
+    case scm_true_type:
+    case scm_false_type:
+    case scm_pair_type:
+        // TODO: equal of pair
+    case scm_null_type:
+    case scm_void_type:
+    case scm_primitive_type:
+    case scm_compound_type:
+    case scm_input_port_type:
+    case scm_output_port_type:
+    case scm_namespace_type:
+    default:
+        if (!SAME_OBJ(x, y))
+            return 0;
+        else
+            return 1;
     }
     return 0;
 }

@@ -29,16 +29,16 @@ y ; (a . 4)
 (car '(a b c)) ; a
 (car '((a) b c d)) ; (a)
 (car '(1 . 2)) ; 1
-(car '()) ; 错误
+;(car '()) ; 错误
 
 (cdr '((a) b c d)) ; (b c d)
 (cdr '(1 . 2)) ; 2
-(cdr '()) ; 错误
+;(cdr '()) ; 错误
 
 (define (f) (list 'not-a-constant-list))
 (define (g) '(constant-list))
-(set-car! (f) 3) ; 未定义
-(set-car! (g) 3) ; 错误
+;(set-car! (f) 3) ; 未定义
+;(set-car! (g) 3) ; 错误
 
 (list? '(a b c)) ; #t
 (list? '()) ; #t
