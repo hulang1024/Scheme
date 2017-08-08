@@ -80,6 +80,8 @@ int scm_load_file(const char* filename)
     }
 
     scm_close_input_port(port);
+
+    return 0;
 }
 
 static scm_object* load_prim(int argc, scm_object *argv[])
@@ -168,7 +170,7 @@ static int get_skip_encoding_marks(scm_object *port)
         encoding = ENCODING_UTF_32LE;
         unread_bytes = read_bytes - 4;
     } else if ((bytes[0] == 0x2B) && (bytes[1] == 0x2F) && (bytes[2] == 0x76)
-               && (bytes[3] == 0x38 || bytes[3] == 0x39 || bytes[3] == 0x2B || bytes[3] == 0x2F)) {
+        && (bytes[3] == 0x38 || bytes[3] == 0x39 || bytes[3] == 0x2B || bytes[3] == 0x2F)) {
         encoding = ENCODING_UTF_7;
         unread_bytes = read_bytes - 4;
     } else if ((bytes[0] == 0x84) && (bytes[1] == 0x31) && (bytes[2] == 0x95) && (bytes[3] == 0x33)) {
