@@ -1,8 +1,11 @@
 #ifndef SCM_H
 #define SCM_H
 
+//#define NDEBUG
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 enum {
     scm_integer_type = 1,
@@ -56,7 +59,7 @@ typedef struct {
 typedef struct {
     scm_object o;
     int len;
-    char *char_str_val;
+    char *byte_str_val;
 } scm_string;
 
 typedef struct {
@@ -71,6 +74,7 @@ typedef struct {
     scm_object *cdr;
 } scm_pair;
 
+/* Scheme基本过程C函数类型 */
 typedef scm_object* (* scm_prim)(int argc, scm_object *argv[]);
 
 typedef struct {
@@ -131,7 +135,7 @@ typedef struct {
 #define SCM_INT_VAL(o) (((scm_integer *)(o))->int_val)
 #define SCM_FLOAT_VAL(o) (((scm_float *)(o))->float_val)
 #define SCM_CHAR_VAL(o) (((scm_char *)(o))->char_val)
-#define SCM_CHAR_STR_VAL(o) (((scm_string *)(o))->char_str_val)
+#define SCM_CHAR_STR_VAL(o) (((scm_string *)(o))->byte_str_val)
 #define SCM_SYMBOL_STR_VAL(o) (((scm_symbol *)(o))->s)
 #define SCM_STR_LEN(o) (((scm_string *)(o))->len)
 
@@ -140,6 +144,7 @@ typedef struct {
 
 #define SCM_PAIR_FLAGS(o) (((scm_pair *)o)->flags)
 #define SCM_PAIR_FLAGS_INIT 0
+/* proper list flags，加快判断速度 */
 #define SCM_PAIR_IS_LIST 1
 #define SCM_PAIR_IS_NON_LIST 2
 
@@ -147,6 +152,5 @@ typedef struct {
 /*                      memory management macros                          */
 /* Allocation */
 #define scm_malloc_object(size) ((scm_object *)malloc(size))
-
 
 #endif //SCM_H

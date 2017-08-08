@@ -13,8 +13,6 @@ static scm_object* equal_p_prim(int, scm_object *[]);
 static scm_object* eqv_p_prim(int, scm_object *[]);
 static scm_object* eq_p_prim(int, scm_object *[]);
 
-static int equal(scm_object *, scm_object *);
-
 void scm_init_bool(scm_env *env)
 {
     // initialize types
@@ -29,7 +27,17 @@ void scm_init_bool(scm_env *env)
     scm_add_prim(env, "eq?", eq_p_prim, 2, 2);
 }
 
-static int equal(scm_object *x, scm_object *y)
+int scm_eq(scm_object *x, scm_object *y)
+{
+    return scm_equal(x, y);
+}
+
+int scm_eqv(scm_object *x, scm_object *y)
+{
+    return scm_equal(x, y);
+}
+
+int scm_equal(scm_object *x, scm_object *y)
 {
     if (!SCM_SAME_TYPE(SCM_TYPE(x), SCM_TYPE(y))) // types: true, false, void, null, ...
         return 0;
@@ -76,15 +84,15 @@ static scm_object* not_p_prim(int argc, scm_object *argv[])
 
 static scm_object* equal_p_prim(int argc, scm_object *argv[])
 {
-    return SCM_BOOL(equal(argv[0], argv[1]));
+    return SCM_BOOL(scm_equal(argv[0], argv[1]));
 }
 
 static scm_object* eqv_p_prim(int argc, scm_object *argv[])
 {
-    return SCM_BOOL(equal(argv[0], argv[1]));
+    return SCM_BOOL(scm_equal(argv[0], argv[1]));
 }
 
 static scm_object* eq_p_prim(int argc, scm_object *argv[])
 {
-    return SCM_BOOL(equal(argv[0], argv[1]));
+    return SCM_BOOL(scm_equal(argv[0], argv[1]));
 }

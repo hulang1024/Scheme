@@ -7,17 +7,20 @@
 #include "system.h"
 #include "eval.h"
 
+char *scm_g_repl_prompt = "> ";
+
 void repl()
 {
+    puts("Welcome to scheme. github.com/hlpp/scheme, (?) for help");
+
     scm_object *exp, *val;
 
-    char *prompt = "> ";
     while (1) {
-        printf(prompt);
+        printf(scm_g_repl_prompt);
         exp = scm_read(scm_stdin_port);
-        if (exp != NULL) {
+        if (exp) {
             val = scm_eval(exp);
-            if (val != NULL && !SCM_VOIDP(val)) {
+            if (val && !SCM_VOIDP(val)) {
                 scm_write(scm_stdout_port, val);
                 putchar('\n');
             }

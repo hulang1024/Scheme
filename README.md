@@ -35,7 +35,7 @@ Scheme编程语言的解释器。
     + 序对和表  
         `pair?`,`null?`,`list?`,`cons`,`car`,`cdr`,`set-car!`,`set-cdr!`,  
         `caar`,`cadr` `...` `cdddar`,`cddddr` (`car`和`cdr`的组合,默认定义到第四层),  
-        `list`,`length`,`memq`,`memv`
+        `list`,`length`,`memq`,`memv`,`member`
     + 符号  
         `symbol?`
     + 字符  
@@ -54,9 +54,10 @@ Scheme编程语言的解释器。
     + 输入/输出  
         `read`,`write`,`newline`,`display`
     + 系统接口  
-        `load`
+        `load`,`time`,`rand`,`?`,`exit`,`set`
 * 注释  
-  单行注释
+  单行注释: `; ...`  
+  多行注释: `#| ... |#`
 
 
 ## 用法

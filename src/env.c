@@ -58,6 +58,8 @@ scm_env_entry* scm_env_lookup(scm_env *env, scm_symbol *id)
 
 void scm_add_prim(scm_env *env, const char *name, scm_prim prim, int min_arity, int max_arity)
 {
+    assert(0 <= min_arity && max_arity >= -1
+        && (max_arity >= 0 ? min_arity <= max_arity : 1));
     // make primitive procedure
     scm_primitive_proc *pprim = (scm_primitive_proc *)scm_malloc_object(sizeof(scm_primitive_proc));
     ((scm_object *)pprim)->type = scm_primitive_type;

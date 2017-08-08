@@ -4,13 +4,19 @@
 #include "print.h"
 #include "eval.h"
 #include <setjmp.h>
+#include "pcc32.h"
 
 void scm_print_error(const char *info)
 {
+    int oc = getTextColor();
+    setTextColor(LIGHT_RED);
+
     printf("%s", info);
+
+    setTextColor(oc);
 }
 
-void scm_throw_error()
+void scm_throw_eval_error()
 {
     longjmp(eval_error_jmp_buf, 1);
 }
@@ -18,7 +24,7 @@ void scm_throw_error()
 scm_object* scm_wrong_contract(const char *name, const char *expected, int index, int argc, scm_object *argv[])
 {
     scm_print_error(name);
-    scm_print_error(": contract violation\n");
+    scm_print_error(": contract violation;\n");
     scm_print_error("  expected: ");
     scm_print_error(expected);
     scm_print_error("\n");
@@ -42,7 +48,7 @@ scm_object* scm_wrong_contract(const char *name, const char *expected, int index
         }
     }
 
-    scm_throw_error();
+    scm_throw_eval_error();
 
     return NULL;
 }
@@ -62,7 +68,7 @@ scm_object* scm_mismatch_arity(scm_object *proc, int is_atleast, int expected_mi
     else
         sprintf(expected, "%d to %d", expected_min, expected_max);
 
-    scm_print_error(proc_name);
+    scm_print_error((char*)proc_name);
     scm_print_error(": arity mismatch;\n");
     scm_print_error(" the expected number of arguments does not match the given number\n");
     scm_print_error("  expected: ");
@@ -82,18 +88,18 @@ scm_object* scm_mismatch_arity(scm_object *proc, int is_atleast, int expected_mi
             scm_print_error("\n");
         }
     }
-    
-    scm_throw_error();
+
+    scm_throw_eval_error();
 
     return NULL;
 }
 
 scm_object* scm_undefined_identifier(scm_symbol *id)
 {
-    scm_print_error(SCM_SYMBOL_STR_VAL(id));
+    scm_print_error((char*)SCM_SYMBOL_STR_VAL(id));
     scm_print_error(": undefined;\n cannot reference undefined identifier\n");
-    
-    scm_throw_error();
+
+    scm_throw_eval_error();
     
     return NULL;
 }
@@ -144,7 +150,7 @@ scm_object* scm_out_of_range(const char *name, scm_object *obj, int start, int e
         scm_print_error(info);
     }
 
-    scm_throw_error();
+    scm_throw_eval_error();
     
     return NULL;
 }

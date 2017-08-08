@@ -63,6 +63,11 @@
 (define (negative? x)
   (< x 0))
 
+(define (remainder n d)
+    (if (< n d)
+	n
+	(remainder (- n d) d)))
+
 (define (odd? z)
   (not (= (remainder z 2) 0)))
 
@@ -112,16 +117,6 @@
 (define (atom? x)
   (not (pair? x)))
 
-
-(define (memq obj list)
-  (cond ((null? list) #f)
-        ((eq? obj (car list)) list)
-        (else (memq obj (cdr list)))))
-
-(define (memv obj list)
-  (cond ((null? list) #f)
-        ((eqv? obj (car list)) list)
-        (else (memv obj (cdr list)))))
 
 (define (assoc x y)
   (cond ((null? y) '())
