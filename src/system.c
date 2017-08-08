@@ -53,7 +53,6 @@ void scm_init_system(scm_env *env)
 }
 
 
-
 int scm_load_file(const char* filename)
 {
     FILE *file = fopen(filename, "r");

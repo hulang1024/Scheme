@@ -214,6 +214,7 @@ static scm_object* read_list(scm_object *port)
     if (!SCM_NULLP(head) && (!found_dot || SCM_NULLP(prev))) {
         SCM_PAIR_FLAGS(head) |= SCM_PAIR_IS_LIST;
     }
+    
     return head;
 }
 
