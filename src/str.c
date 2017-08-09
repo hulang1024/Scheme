@@ -125,9 +125,8 @@ static scm_object* string_set_prim(int argc, scm_object *argv[])
     if (!SCM_CHARP(argv[2]))
         return scm_wrong_contract("string-set!", "char?", 2, argc, argv);
 
-    int len = SCM_STR_LEN(argv[0]);
     int k = SCM_INT_VAL(argv[1]);
-    if (!(0 <= k && k < len))
+    if (!(0 <= k && k < SCM_STR_LEN(argv[0])))
         return scm_out_of_range("string-set!", argv[0], k, k, 0);
     
     SCM_CHAR_STR_VAL(argv[0])[k] = SCM_CHAR_VAL(argv[2]);

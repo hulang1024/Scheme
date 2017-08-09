@@ -23,6 +23,8 @@ enum {
     scm_pair_type,
     scm_null_type,
     
+    scm_vector_type,
+    
     scm_primitive_type,
     scm_compound_type,
 
@@ -73,6 +75,12 @@ typedef struct {
     scm_object *car;
     scm_object *cdr;
 } scm_pair;
+
+typedef struct {
+    scm_object o;
+    int len;
+    scm_object **elems;
+} scm_vector;
 
 /* Scheme基本过程C函数类型 */
 typedef scm_object* (* scm_prim)(int argc, scm_object *argv[]);
@@ -126,6 +134,8 @@ typedef struct {
 #define SCM_NULLP(o) SAME_OBJ(o, scm_null)
 #define SCM_VOIDP(o) SCM_SAME_TYPE(SCM_TYPE(o), scm_void_type)
 
+#define SCM_VECTORP(o) SCM_SAME_TYPE(SCM_TYPE(o), scm_vector_type)
+
 #define SCM_PRIMPROCP(o) SCM_SAME_TYPE(SCM_TYPE(o), scm_primitive_type)
 #define SCM_COMPROCP(o) SCM_SAME_TYPE(SCM_TYPE(o), scm_compound_type)
 #define SCM_PROCEDUREP(o) (SCM_PRIMPROCP(o) || SCM_COMPROCP(o))
@@ -138,6 +148,9 @@ typedef struct {
 #define SCM_CHAR_STR_VAL(o) (((scm_string *)(o))->byte_str_val)
 #define SCM_SYMBOL_STR_VAL(o) (((scm_symbol *)(o))->s)
 #define SCM_STR_LEN(o) (((scm_string *)(o))->len)
+
+#define SCM_VECTOR_ELEMS(o) (((scm_vector *)(o))->elems)
+#define SCM_VECTOR_LEN(o) (((scm_vector *)(o))->len)
 
 #define SCM_CAR(o) (((scm_pair *)(o))->car)
 #define SCM_CDR(o) (((scm_pair *)(o))->cdr)
