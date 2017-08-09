@@ -8,6 +8,7 @@
 #include "str.h"
 #include "symbol.h"
 #include "list.h"
+#include "vector.h"
 #include "env.h"
 #include "error.h"
 
@@ -18,6 +19,7 @@ static scm_object* read_number(scm_object *, char, int);
 static scm_object* read_symbol(scm_object *, int);
 static scm_object* read_quote(scm_object *);
 static scm_object* read_list(scm_object *);
+static scm_object* read_vector(scm_object *);
 static void skip_whitespace_comments(scm_object *);
 static scm_object* read_error(const char *s);
 
@@ -120,6 +122,10 @@ scm_object* read(scm_object *port)
                 case '\\':
                     obj = read_char(port);
                     break;
+                case '(':
+                case '[':
+                case '{':
+                    obj = read_vector(port);
                 default:
                     obj = read_number(port, c, 1);
             }
@@ -216,6 +222,32 @@ static scm_object* read_list(scm_object *port)
     }
     
     return head;
+}
+
+static scm_object* read_vector(scm_object *port)
+{
+    int len = 0;
+    scm_pair head;
+    scm_object *prev = head;
+    scm_object *obj;
+    int c;
+    
+    while (1) {
+        c = scm_getc(port);
+        if (c == ')' || c == ']' || c == '}' || scm_eofp(c)) {
+            break;
+        }
+        
+        scm_ungetc(c, port);
+        obj = read(port);
+        skip_whitespace_comments(port);
+        
+        SCM_CDR(prev) = obj;
+        prev = SCM_CDR(prev);
+        len++;
+    }
+
+    return scm_list_to_vector(SCM_CDR(&head), len);
 }
 
 static scm_object* read_symbol(scm_object *port, int initch)
