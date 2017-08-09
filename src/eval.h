@@ -38,7 +38,7 @@
 #define scm_begin_actions SCM_CDR
 #define scm_make_begin(seq) SCM_LCONS((scm_object *)scm_begin_symbol, seq)
 #define scm_sequence_exp(seq) (SCM_NULLP(seq) ? \
-    seq : SCM_NULLP(SCM_CDR(seq)) ? SCM_CDR(seq) : scm_make_begin(seq))
+    seq : SCM_NULLP(SCM_CDR(seq)) ? SCM_CAR(seq) : scm_make_begin(seq))
 
 #define scm_and_tests SCM_CDR
 #define scm_or_tests SCM_CDR
@@ -59,7 +59,7 @@
 #define scm_cond_clauses SCM_CDR
 #define scm_clause_test SCM_CAR
 #define scm_clause_actions SCM_CDR
-#define scm_is_else_clause(clause) SAME_OBJ(scm_clause_test(clause), scm_else_symbol)
+#define scm_is_else_clause(clause) SAME_OBJ(scm_clause_test(clause), (scm_object *)scm_else_symbol)
 #define scm_make_cond(clauses) SCM_LCONS((scm_object *)scm_cond_symbol, clauses)
 
 #define scm_case_key SCM_CADR

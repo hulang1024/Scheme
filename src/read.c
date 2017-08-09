@@ -126,6 +126,7 @@ scm_object* read(scm_object *port)
                 case '[':
                 case '{':
                     obj = read_vector(port);
+                    break;
                 default:
                     obj = read_number(port, c, 1);
             }
@@ -228,7 +229,7 @@ static scm_object* read_vector(scm_object *port)
 {
     int len = 0;
     scm_pair head;
-    scm_object *prev = head;
+    scm_object *prev = (scm_object *)&head;
     scm_object *obj;
     int c;
     
@@ -242,12 +243,15 @@ static scm_object* read_vector(scm_object *port)
         obj = read(port);
         skip_whitespace_comments(port);
         
-        SCM_CDR(prev) = obj;
+        SCM_CDR(prev) = SCM_LIST1(obj);
         prev = SCM_CDR(prev);
         len++;
     }
 
-    return scm_list_to_vector(SCM_CDR(&head), len);
+    if (prev != (scm_object *)&head)
+        return scm_list_to_vector(SCM_CDR(&head), len);
+    else
+        return scm_make_vector(NULL, 0);
 }
 
 static scm_object* read_symbol(scm_object *port, int initch)

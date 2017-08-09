@@ -40,6 +40,7 @@ void scm_init_list(scm_env *env);
 scm_object* scm_make_pair(scm_object *, scm_object *);
 scm_object* scm_make_list_pair(scm_object *, scm_object *);
 scm_object* scm_build_list(int, scm_object **);
+scm_object* scm_append_list2(scm_object *, scm_object *);
 int scm_list_length(scm_object *);
 int scm_is_list(scm_object *);
 

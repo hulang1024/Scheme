@@ -68,3 +68,9 @@ y ; (a . 4)
 
 (list-ref '(a b c d) 2) ; c
 
+
+(memq 'a '(a b c)) ;(a b c)
+(memq 'b '(a b c)) ;(b c)
+(memq 'a '(b c d)) ;#f
+(memq (list 'a) '(b (a) c)) ;#f
+

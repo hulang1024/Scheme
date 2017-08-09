@@ -141,6 +141,7 @@ static void write(scm_object *port, scm_object *obj, int notdisplay)
             fprintf(f, "#<namespace>");
             break;
         case scm_void_type:
+            fprintf(f, "#<void>");
             break;
         default: ;
     }
@@ -173,12 +174,14 @@ static void write_vector(scm_object *port, scm_object *vector, int notdisplay)
 {
     FILE* f = ((scm_output_port *)port)->f;// TODO:
 
-    fprintf(f, "(");
+    fprintf(f, "#(");
     int len = SCM_VECTOR_LEN(vector);
-    int elems = SCM_VECTOR_ELEMS(vector);
+    scm_object **elems = SCM_VECTOR_ELEMS(vector);
     int i;
     for (i = 0; i < len; i++) {
         write(port, elems[i], notdisplay);
+        if (i + 1 < len)
+            fprintf(f, " ");
     }
     fprintf(f, ")");
 }

@@ -35,9 +35,8 @@
 
 ;;; bool
 
-;(define true #t)
-;(define false #f)
-
+(define true #t)
+(define false #f)
 
 
 ;;; write

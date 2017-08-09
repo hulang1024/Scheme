@@ -15,12 +15,12 @@ Scheme编程语言的解释器。
 * 闭包
 * 动态类型
 * 传值调用
-* 条件表达式: `if`,`when`,`unless`,`and`,`or`
+* 条件表达式: `if`,`when`,`unless`,`and`,`or`,`cond`,`case`
 * 递归
 * 尾递归
+* 顺序结构: `begin`
 * 迭代结构: `let`,`do`,`while`,`for`
 * 定义: `define`
-* 顺序结构: `begin`
 * 赋值: `set!`
 
 * 标准过程

@@ -18,7 +18,7 @@ static scm_object* vector_fill_prim(int, scm_object *[]);
 void scm_init_vector(scm_env *env)
 {
     scm_add_prim(env, "vector?", vector_p_prim, 1, 1);
-    scm_add_prim(env, "make-vector", maek_vector_prim, 1, 2);
+    scm_add_prim(env, "make-vector", make_vector_prim, 1, 2);
     scm_add_prim(env, "vector", vector_prim, 0, -1);
     scm_add_prim(env, "vector-set!", vector_set_prim, 3, 3);
     scm_add_prim(env, "vector-ref", vector_ref_prim, 2, 2);
@@ -28,14 +28,14 @@ void scm_init_vector(scm_env *env)
     scm_add_prim(env, "vector-fill!", vector_fill_prim, 2, 2);
 }
 
-scm_object* scm_make_vector(scm_object *elems[], int len);
+scm_object* scm_make_vector(scm_object *elems[], int len)
 {
     scm_object *vec = scm_malloc_object(sizeof(scm_vector));
-    
+
     vec->type = scm_vector_type;
     SCM_VECTOR_ELEMS(vec) = elems;
     SCM_VECTOR_LEN(vec) = len;
-    
+
     return vec;
 }
 
@@ -73,7 +73,7 @@ static scm_object* make_vector_prim(int argc, scm_object *argv[])
 
 static scm_object* vector_prim(int argc, scm_object *argv[])
 {
-    return scm_make_vector(argv, argc)
+    return scm_make_vector(argv, argc);
 }
 
 #define VECTOR_INDEX_CHECK(name) \
