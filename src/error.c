@@ -112,9 +112,9 @@ scm_object* scm_out_of_range(const char *name, scm_object *obj, int start, int e
     if (SCM_STRINGP(obj)) {
         type = "string";
         len = SCM_STR_LEN(obj);
-    } else {
+    } else if (SCM_VECTORP(obj) {
         type = "vector";
-        //TODO: vector
+        len = SCM_VECTOR_LEN(obj);
     }
 
     char info[200] = {0};
