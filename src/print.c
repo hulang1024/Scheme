@@ -7,6 +7,7 @@
 
 #define WRITE_TEXT_COLOR LIGHT_BLUE
 #define DISPLAY_TEXT_COLOR LIGHT_MAGENTA
+
 enum {
     DISPLAY = 0,
     WRITE = 1
@@ -18,6 +19,7 @@ static scm_object* newline_prim(int, scm_object *[]);
 
 static void write(scm_object *port, scm_object *, int);
 static void write_list(scm_object *port, scm_object *, int);
+static void write_vector(scm_object *port, scm_object *, int);
 
 void scm_init_print(scm_env *env)
 {
@@ -123,6 +125,9 @@ static void write(scm_object *port, scm_object *obj, int notdisplay)
         case scm_pair_type:
             write_list(port, obj, notdisplay);
             break;
+        case scm_vector_type:
+            write_vector(port, obj, notdisplay);
+            break;  
         case scm_null_type:
             fprintf(f, "()");
             break;
@@ -160,6 +165,20 @@ static void write_list(scm_object *port, scm_object *list, int notdisplay)
             write(port, list, notdisplay);
             list = scm_null;
         }
+    }
+    fprintf(f, ")");
+}
+
+static void write_vector(scm_object *port, scm_object *vector, int notdisplay)
+{
+    FILE* f = ((scm_output_port *)port)->f;// TODO:
+
+    fprintf(f, "(");
+    int len = SCM_VECTOR_LEN(vector);
+    int elems = SCM_VECTOR_ELEMS(vector);
+    int i;
+    for (i = 0; i < len; i++) {
+        write(port, elems[i], notdisplay);
     }
     fprintf(f, ")");
 }
