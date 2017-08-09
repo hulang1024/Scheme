@@ -19,9 +19,17 @@
 #define SCM_CADDR(o) SCM_CAR(SCM_CDDR(o))
 #define SCM_CDDDR(o) SCM_CDR(SCM_CDDR(o))
 #define SCM_CDADR(o) SCM_CDR(SCM_CADR(o))
+#define SCM_CDDAR(o) SCM_CDR(SCM_CDAR(o))
 #define SCM_CADDDR(o) SCM_CAR(SCM_CDDDR(o))
+#define SCM_CDDDDR(o) SCM_CDR(SCM_CDDDR(o))
+#define SCM_CAADDR(o) SCM_CAR(SCM_CADDR(o))
+#define SCM_CDADDR(o) SCM_CDR(SCM_CADDR(o))
+#define SCM_CADDAR(o) SCM_CAR(SCM_CDDAR(o))
 
-/* list ::  proper list */
+/*
+ * iterate over a list
+ * @list  the proper list variable
+ */
 #define scm_list_for_each(list) \
     assert(scm_is_list(list)); \
     for (; !SCM_NULLP(list); list = SCM_CDR(list))

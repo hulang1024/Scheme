@@ -15,6 +15,7 @@ static scm_object* cdr_prim(int, scm_object *[]);
 static scm_object* setcar_prim(int, scm_object *[]);
 static scm_object* setcdr_prim(int, scm_object *[]);
 static scm_object* list_prim(int, scm_object *[]);
+static scm_object* list_tail_prim(int, scm_object *[])
 static scm_object* list_ref_prim(int, scm_object *[]);
 static scm_object* length_prim(int, scm_object *[]);
 static scm_object* memq_prim(int, scm_object *[]);
@@ -34,8 +35,10 @@ void scm_init_list(scm_env *env)
     scm_add_prim(env, "cdr", cdr_prim, 1, 1);
     scm_add_prim(env, "set-car!", setcar_prim, 2, 2);
     scm_add_prim(env, "set-cdr!", setcdr_prim, 2, 2);
-
+    
     scm_add_prim(env, "list", list_prim, 0, -1);
+    
+    scm_add_prim(env, "list-tail", list_tail_prim, 2, 2);
     scm_add_prim(env, "list-ref", list_ref_prim, 2, 2);
     scm_add_prim(env, "length", length_prim, 1, 1);
 
@@ -171,25 +174,38 @@ static scm_object* list_prim(int argc, scm_object *argv[])
     return scm_build_list(argc, argv);
 }
 
+static scm_object* list_tail_prim(int argc, scm_object *argv[])
+{
+    return do_checked_list_ref("list-tail", 0, argv);
+}
+
 static scm_object* list_ref_prim(int argc, scm_object *argv[])
 {
-    if (!SCM_PAIRP(argv[0]))
-        return scm_wrong_contract("list-ref", "pair?", 0, argc, argv);
-    if (!SCM_INTEGERP(argv[1]))
-        return scm_wrong_contract("list-ref", "integer?", 1, argc, argv);
+    return do_checked_list_ref("list-ref", 1, argv);
+}
 
+static scm_object* do_checked_list_ref(const char *name, int takecar, scm_object *argv[]) {
+    if(!SCM_PAIRP(argv[0]))
+        return scm_wrong_contract(name, "pair?", 0, argc, argv);
+    if(!is_exact_nonnegative_integer(argv[1]))
+        return scm_wrong_contract(name, "exact-nonnegative-integer?", 1, argc, argv);
+    
     scm_object *list = argv[0];
     int index = SCM_INT_VAL(argv[1]);
-    //TODO: index check
-    while (index > 0 && !SCM_NULLP(list)) {
+    while (index > 0) {
         index--;
-        if (SCM_PAIRP(list))
-            list = SCM_CDR(list);
-        else
-            list = scm_null; /* 设空表以结束 */
+        if (!SCM_PAIRP(list))
+            return scm_wrong_contract("cdr", "pair?", 0, argc, argv);
+        list = SCM_CDR(list);
     }
-    //TODO: check
-    return SCM_CAR(list);
+    
+    if (takecar) {
+        if (!SCM_PAIRP(list))
+            return scm_wrong_contract("car", "pair?", 0, argc, argv);
+
+        return SCM_CAR(list);
+    } else
+        return list;
 }
 
 static scm_object* length_prim(int argc, scm_object *argv[])
