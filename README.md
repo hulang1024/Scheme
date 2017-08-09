@@ -65,7 +65,7 @@ Scheme编程语言的解释器。
 * 扩展
     + 中括号`[]`, 大括号`{}`  
     + 多行注释: `#| ... |#`  
-    + Win32控制台控制 例子见/tests/pcc32/(tests/pcc32/)
+    + Win32控制台控制 例子见[/tests/pcc32/](tests/pcc32/)
 
 ## 用法
 运行`scheme`会开始并给你一个REPL(Read-Eval-Print-Loop)环境。  
