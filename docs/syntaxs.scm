@@ -1,8 +1,8 @@
 (define-syntax case
   (syntax-rules (else)
-    ((_ key ((datum ...) exp ...) ...)
+    ((_ key ((datum ...) exp1 ...) ...)
      (let ((v key))
-       (cond ((memv v '(datum ...)) exp ...)
+       (cond ((memv v '(datum ...)) exp1 ...)
              ...)))
     ((_ key ((datum ...) exp1 ...) ... (else exp2 ...))
      (let ((v key))

@@ -18,6 +18,7 @@ Scheme编程语言的解释器。
 * 条件表达式: `if`,`when`,`unless`,`and`,`or`
 * 递归
 * 尾递归
+* 迭代结构: `let`,`do`,`while`,`for`
 * 定义: `define`
 * 顺序结构: `begin`
 * 赋值: `set!`
@@ -44,9 +45,12 @@ Scheme编程语言的解释器。
         `char-alphabetic?`,`char-numeric?`,`char-whitespace?`,`char-upper-case?`,`char-lower-case?`,  
         `char->integer`,`integer->char`,  
         `char-upcase`,`char-downcase`
-    + 字符串  
+    + 字符串    
         `string?`,`make-string`,`string`,`string-length`,`string-ref`,`string-set!`,`substring`,`string-append`,  
         `string->list`,`list->string`,`string-copy`,`string-fill!`
+    + 向量  
+        `vector?`,`make-vector`,`vector`,`vector-set!`,`vector-ref`,`vector-length`,  
+        `vector->list`,`list->vector`,`vector-fill!`
     + 控制特征  
         `procedure?`,`apply`,`void`,`void?`
     + 求值  
@@ -55,12 +59,13 @@ Scheme编程语言的解释器。
         `read`,`write`,`newline`,`display`
     + 系统接口  
         `load`,`time`,`rand`,`?`,`exit`,`set`
-    + 内置扩展  
-        * Win32 Console Control 见[/src/lib/libpcc32.c](src/lib/libpcc32.c), 例子见`/tests/pcc32/`
 * 注释  
   单行注释: `; ...`  
-  多行注释: `#| ... |#`
 
+* 扩展
+    + 中括号`[]`, 大括号`{}`  
+    + 多行注释: `#| ... |#`  
+    + Win32控制台控制 例子见/tests/pcc32/(tests/pcc32/)
 
 ## 用法
 运行`scheme`会开始并给你一个REPL(Read-Eval-Print-Loop)环境。  
