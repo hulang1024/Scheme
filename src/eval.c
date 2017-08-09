@@ -29,6 +29,11 @@ static int match_arity(scm_object *, int, scm_object *[]);
 static scm_object* let_to_combination(scm_object *);
 static scm_object* and_to_if(scm_object *);
 static scm_object* or_to_if(scm_object *);
+static scm_object* cond_to_if(scm_object *);
+static scm_object* case_to_cond(scm_object *);
+static scm_object* do_to_more_prim(scm_object *);
+static scm_object* while_to_more_prim(scm_object *);
+static scm_object* for_to_more_prim(scm_object *);
 
 static scm_env *global_env;
 
@@ -158,6 +163,21 @@ static scm_object* eval(scm_object *exp, scm_env *env)
                 }
                 if (SAME_OBJ(operator, scm_unless_symbol)) {
                     EVAL(unless_to_if(exp));
+                }
+                if (SAME_OBJ(operator, scm_cond_symbol)) {
+                    EVAL(cond_to_if(exp));
+                }
+                if (SAME_OBJ(operator, scm_case_symbol)) {
+                    EVAL(case_to_cond(exp));
+                }
+                if (SAME_OBJ(operator, scm_do_symbol)) {
+                    EVAL(do_to_more_prim(exp));
+                }
+                if (SAME_OBJ(operator, scm_while_symbol)) {
+                    EVAL(while_to_more_prim(exp));
+                }
+                if (SAME_OBJ(operator, scm_for_symbol)) {
+                    EVAL(for_to_more_prim(exp));
                 }
                 if (SAME_OBJ(operator, scm_assignment_symbol))
                     return eval_assignment(exp, env);
@@ -351,32 +371,33 @@ static int match_arity(scm_object *proc, int argc, scm_object *argv[])
 
 static scm_object* let_to_combination(scm_object *exp)
 {
+    // pluck bindings vars, inits
     scm_object *bindings = scm_let_bindings(exp);
-    scm_object *body = scm_let_body(exp);
-    scm_object *let_binding_vars = scm_null, *var_last;
-    scm_object *let_binding_inits = scm_null, *init_last;
-
+    scm_pair binding_vars_head;
+    scm_object *var_prev = &binding_vars_head;
+    scm_pair binding_inits_head;
+    scm_object *init_prev = &binding_inits_head;
     scm_list_for_each(bindings) {
-        if(SCM_NULLP(let_binding_vars)) {
-            let_binding_vars = var_last = SCM_LCONS(SCM_CAAR(bindings), scm_null);
-            let_binding_inits = init_last = SCM_LCONS(SCM_CADAR(bindings), scm_null);
-        } else {
-            var_last = SCM_CDR(var_last) = SCM_LCONS(SCM_CAAR(bindings), scm_null);
-            init_last = SCM_CDR(init_last) = SCM_LCONS(SCM_CADAR(bindings), scm_null);
-        }
+        var_prev = SCM_CDR(var_prev) = SCM_LCONS(SCM_CAAR(bindings), scm_null);
+        init_prev = SCM_CDR(init_prev) = SCM_LCONS(SCM_CADAR(bindings), scm_null);
     }
-
+    
+    scm_object *binding_vars = var_prev != binding_vars_head ? SCM_CDR(&binding_vars_head) : scm_null;
+    scm_object *binding_inits = init_prev != binding_inits_head ? SCM_CDR(&binding_inits_head) : scm_null;
+    
+    scm_object *body = scm_let_body(exp);
+    
     if(scm_is_named_let(exp)) {
         return scm_make_app0(
                    scm_make_lambda(
                        scm_null,
                        SCM_LIST2(
-                           scm_make_def(scm_let_var(exp), scm_make_lambda(let_binding_vars, body)),
-                           scm_make_app(scm_let_var(exp), let_binding_inits))));
+                           scm_make_def(scm_let_var(exp), scm_make_lambda(binding_vars, body)),
+                           scm_make_app(scm_let_var(exp), binding_inits))));
     } else {
         return scm_make_app(
-                   scm_make_lambda(let_binding_vars, body),
-                   let_binding_inits);
+                   scm_make_lambda(binding_vars, body),
+                   binding_inits);
     }
 }
 
@@ -392,7 +413,7 @@ static scm_object* let_to_combination(scm_object *exp)
         \
         exp = SCM_CDR(exp); \
         scm_list_for_each(exp) { \
-            if(!SCM_NULLP(SCM_CDR(exp))) { \
+            if (!SCM_NULLP(SCM_CDR(exp))) { \
                 if_exp = scm_make_if(pred_exp, temp_var, NULL); \
                 let_exp = scm_make_let(SCM_LIST1(SCM_LIST2(temp_var, SCM_CAR(exp))), if_exp); \
                 if (head != NULL) \
@@ -416,3 +437,130 @@ static scm_object* let_to_combination(scm_object *exp)
 GEN_AND_OR_OR_TRANS(and_to_if, scm_true, scm_make_app(scm_not_symbol, SCM_LIST1(temp_var)));
 GEN_AND_OR_OR_TRANS(or_to_if, scm_false, temp_var);
 
+static scm_object* cond_to_if(scm_object *exp)
+{
+    #define it_clause_actions(exp) scm_sequence_exp(scm_clause_actions(SCM_CAR(exp)))
+
+    if(SCM_NULLP(scm_cond_clauses(exp)))
+        return scm_void;
+    
+    scm_object *head = NULL, *prev;
+    scm_object *if_exp;
+    
+    // for each clauses
+    exp = scm_cond_clauses(exp);
+    scm_list_for_each(exp) {
+        if (!scm_is_else_clause(SCM_CAR(exp))) {
+            if_exp = scm_make_if(scm_clause_test(SCM_CAR(exp)), it_clause_actions(exp), scm_void);
+            if (head != NULL)
+                SCM_CDR(prev) = SCM_LIST1(if_exp);
+            else
+                head = if_exp;
+            prev = SCM_CDDR(if_exp);
+        } else {
+            if (!SCM_NULLP(SCM_CDR(exp))) {
+                scm_print_error("cond: bad syntax (`else' clause must be last) ");
+                scm_print_error("  in: ");
+                scm_write(scm_stdout_port, SCM_CAR(exp));
+                scm_print_error("\n");
+                scm_throw_eval_error();
+            }
+            if (head != NULL)
+                SCM_CDR(prev) = SCM_LIST1(it_clause_actions(exp));
+            else {
+                head = it_clause_actions(exp);
+            }
+        }
+    }
+    
+    return head;
+}
+
+static scm_object* case_to_cond(scm_object *exp)
+{
+    scm_object *cond_clauses = scm_null, *last;
+    scm_object *temp_var = scm_gen_symbol();
+    // map clauses
+    scm_object *clauses = scm_case_clauses(exp);
+    scm_list_for_each(clauses) {
+        if (!scm_is_else_clause(SCM_CAR(clauses))) {
+            cond_clauses = last = scm_make_app(
+                                      scm_memv_symbol,
+                                      SCM_LIST2(temp_var,
+                                                scm_make_quotation(scm_clause_test(SCM_CAR(clauses)))));
+        } else {
+            last = SCM_CDR(last) = SCM_CAR(clauses);
+        }
+    }
+    
+    return scm_make_let(
+               SCM_LIST1(SCM_LIST2(temp_var, scm_case_key(exp))),
+               scm_make_cond(cond_clauses);
+}
+
+static scm_object* do_to_more_prim(scm_object *exp)
+{
+    scm_object *bindings = do_bindings(exp);
+    scm_pair let_bindings_head;
+    scm_object *bind_prev = &let_bindings_head;
+    scm_pair steps_head;
+    scm_object *step_prev = &steps_head;
+    // pluck bindings (var, init), steps
+    scm_list_for_each(bindings) {
+        bind_prev = SCM_CDR(bind_prev) = SCM_LIST2(SCM_CAAR(bindings), SCM_CADAR(bindings));
+        step_prev = SCM_CDR(step_prev) = SCM_CADDAR(bindings);
+    }
+    scm_object *let_bindings = bind_prev != let_bindings_head ? SCM_CDR(&let_bindings_head) : scm_null;
+    scm_object *steps = step_prev != steps_head ? SCM_CDR(&steps_head) : scm_null;
+    
+    scm_object *var = scm_gen_symbol();
+    scm_object *alt = scm_do_commands(exp);
+    *(SCM_NULLP(alt) ? &alt : &SCM_CDR(alt)) = SCM_LIST1(scm_make_app(var, steps));
+
+    return scm_make_named_let(
+               var,
+               let_bindings,
+               scm_make_if(
+                   scm_do_test(exp),
+                   scm_sequence_exp(scm_do_actions(exp)),
+                   scm_sequence_exp(alt)));
+}
+
+static scm_object* while_to_more_prim(scm_object *exp)
+{
+    scm_object *var = scm_gen_symbol();
+    scm_object *body = scm_while_body(exp);
+    *(SCM_NULLP(body) ? &body : &SCM_CDR(body)) = SCM_LIST1(scm_make_app0(var));
+    
+    return scm_make_named_let(
+               var,
+               scm_null,
+               scm_make_when(
+                   scm_while_test(exp),
+                   body));
+}
+
+static scm_object* for_to_more_prim(scm_object *exp)
+{
+    scm_object *var = scm_for_var(exp);
+    scm_object *list = scm_for_list(exp);
+    
+    var loop_var = scm_gen_symbol();
+    
+    scm_object *body = scm_for_body(exp);
+    *(SCM_NULLP(body) ? &body : &SCM_CDR(body)) =
+        SCM_LIST1(
+            scm_make_app(
+                loop_var,
+                SCM_LIST1(
+                    scm_make_app(
+                        scm_plus_symbol,
+                        SCM_LIST2(var, scm_make_integer(1))))));
+
+    return scm_make_named_let(
+               loop_var,
+               SCM_LIST1(SCM_LIST2(var, scm_for_list_start(list))),
+               scm_make_when(
+                   scm_make_app(scm_lt_symbol, SCM_LIST1(var, scm_for_list_end(list))),
+                   body));
+}

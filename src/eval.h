@@ -40,12 +40,12 @@
 #define scm_sequence_exp(seq) (SCM_NULLP(seq) ? \
     seq : SCM_NULLP(SCM_CDR(seq)) ? SCM_CDR(seq) : scm_make_begin(seq))
 
-
 #define scm_and_tests SCM_CDR
 #define scm_or_tests SCM_CDR
 
 #define scm_when_test SCM_CADR
 #define scm_when_body SCM_CDDR
+#define scm_make_when(test, body) SCM_LCONS((scm_object *)scm_when_symbol, SCM_LCONS(test, body))
 #define scm_unless_test SCM_CADR
 #define scm_unless_body SCM_CDDR
 
@@ -55,6 +55,29 @@
 #define scm_let_body(exp) (scm_is_named_let(exp) ? SCM_CDDDR(exp) : SCM_CDDR(exp))
 #define scm_make_let(bindings, body) SCM_LIST3((scm_object *)scm_let_symbol, bindings, body)
 #define scm_make_named_let(name, bindings, body) SCM_LIST4((scm_object *)scm_let_symbol, name, bindings, body)
+
+#define scm_cond_clauses SCM_CDR
+#define scm_clause_test SCM_CAR
+#define scm_clause_actions SCM_CDR
+#define scm_is_else_clause(clause) SAME_OBJ(scm_clause_test(clause), scm_else_symbol)
+#define scm_make_cond(clauses) SCM_LCONS((scm_object *)scm_cond_symbol, clauses)
+
+#define scm_case_key SCM_CADR
+#define scm_case_clauses SCM_CDDR
+
+#define scm_do_bindings SCM_CADR
+#define scm_do_test SCM_CAADDR
+#define scm_do_actions SCM_CDADDR
+#define scm_do_commands SCM_CDDDR
+
+#define scm_while_test SCM_CADR
+#define scm_while_body SCM_CDDR
+
+#define scm_for_var SCM_CADR
+#define scm_for_list SCM_CADDDR
+#define scm_for_list_start(list) SCM_CAR(list)
+#define scm_for_list_end(list) SCM_CADDR(list)
+#define scm_for_body SCM_CDDDDR
 
 
 extern jmp_buf eval_error_jmp_buf;
