@@ -545,7 +545,7 @@ static scm_object* for_to_more_prim(scm_object *exp)
     scm_object *var = scm_for_var(exp);
     scm_object *list = scm_for_list(exp);
     
-    var loop_var = scm_gen_symbol();
+    scm_object *loop_var = scm_gen_symbol();
     
     scm_object *body = scm_for_body(exp);
     *(SCM_NULLP(body) ? &body : &SCM_CDR(body)) =

@@ -5,6 +5,7 @@
 #include "char.h"
 #include "str.h"
 #include "list.h"
+#include "vector.h"
 #include "read.h"
 #include "print.h"
 #include "fun.h"
@@ -23,6 +24,7 @@ scm_env* scm_basic_env()
     scm_init_number(env);
     scm_init_symbol(env);
     scm_init_list(env);
+    scm_init_vector(env);
     scm_init_port(env);
     scm_init_print(env);
     scm_init_read(env);

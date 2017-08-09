@@ -56,6 +56,8 @@ int scm_equal(scm_object *x, scm_object *y)
     case scm_false_type:
     case scm_pair_type:
         // TODO: equal of pair
+    case scm_vector_type:
+        // TODO: equal of vector
     case scm_null_type:
     case scm_void_type:
     case scm_primitive_type:
