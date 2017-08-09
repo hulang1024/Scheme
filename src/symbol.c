@@ -1,4 +1,4 @@
-#include <string.h>
+﻿#include <string.h>
 #include "symbol.h"
 #include "bool.h"
 #include "list.h"
@@ -32,7 +32,16 @@ void scm_init_symbol(scm_env *env)
     scm_do_symbol = scm_get_intern_symbol("do");
     scm_while_symbol = scm_get_intern_symbol("while");
     scm_for_symbol = scm_get_intern_symbol("for");
+
+
+    scm_plus_symbol = scm_get_intern_symbol("+");
+    scm_minus_symbol = scm_get_intern_symbol("-");
+    scm_mul_symbol = scm_get_intern_symbol("*");
+    scm_div_symbol = scm_get_intern_symbol("/");
+    scm_lt_symbol = scm_get_intern_symbol("<");
     
+    scm_memv_symbol = scm_get_intern_symbol("memv");
+
     scm_add_prim(env, "symbol?", symbol_p_prim, 1, 1);
 }
 
