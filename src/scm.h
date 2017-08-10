@@ -93,7 +93,8 @@ typedef struct {
     int max_arity;
 } scm_primitive_proc;
 
-typedef struct _scm_env scm_env;
+struct scm_env;
+typedef struct scm_env scm_env;
 
 typedef struct {
     scm_object o;

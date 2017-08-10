@@ -19,6 +19,7 @@
         scm_make_app(scm_not_symbol, SCM_LIST1(scm_unless_test(exp))), \
         scm_make_begin(scm_unless_body(exp)))
 
+        
 static scm_object* eval_prim(int, scm_object *[]);
 static scm_object* eval(scm_object *, scm_env *);
 static scm_object* eval_definition(scm_object *, scm_env *);
@@ -101,9 +102,9 @@ static scm_object* eval(scm_object *exp, scm_env *env)
             
         case scm_symbol_type: {
             // 是符号，查询在环境中关联的值
-            scm_env_entry *entry = scm_env_lookup(env, (scm_symbol *) exp);
-            if (entry != NULL) {
-                return entry->val;
+            scm_object *val = scm_env_lookup(env, (scm_symbol *) exp);
+            if (val != NULL) {
+                return val;
             } else {
                 return scm_undefined_identifier((scm_symbol *)exp);
             }
@@ -284,12 +285,7 @@ static scm_object* eval_definition(scm_object *exp, scm_env *env)
     if (SCM_COMPROCP(val))
         ((scm_compound_proc *)val)->name = SCM_SYMBOL_STR_VAL(id);
     
-    scm_env_entry * entry = scm_env_lookup(env, id);
-    if (entry == NULL) {
-        scm_env_add_binding(env, id, val);
-    } else {
-        entry->val = val;
-    }
+    scm_env_add_binding(env, id, val);
     
     return scm_void;
 }
@@ -297,9 +293,8 @@ static scm_object* eval_definition(scm_object *exp, scm_env *env)
 static scm_object* eval_assignment(scm_object *exp, scm_env *env)
 {
     scm_symbol *id = scm_assignment_var(exp);
-    scm_env_entry * entry = scm_env_lookup(env, id);
-    if (entry != NULL) {
-        entry->val = eval(scm_assignment_val(exp), env);
+    if (scm_env_lookup(env, id) != NULL) {
+        scm_env_set_binding(env, id, eval(scm_assignment_val(exp), env));
     } else {
         // if entry is NULL
         scm_undefined_identifier(id);
@@ -310,32 +305,28 @@ static scm_object* eval_assignment(scm_object *exp, scm_env *env)
 static scm_env* make_apply_env(scm_compound_proc *proc, int argc, scm_object *argv[])
 {
     if (proc->params_len > 0) {
-        scm_env *apply_env = (scm_env *)scm_malloc_object(sizeof(scm_env));
+        scm_env *apply_env = scm_env_new_frame(proc->params_len);
         apply_env->rest = NULL;
 
         int index;
-        if (proc->min_arity == proc->max_arity) { // '(x y z)
+        if (proc->min_arity == proc->max_arity) {
             for (index = 0; index < proc->params_len; index++)
                 scm_env_add_binding(apply_env, (scm_symbol *)proc->params[index], argv[index]);
         } else {
-            if (proc->min_arity > 0) { // '(x y . z)
+            if (proc->min_arity > 0) {
                 for (index = 0; index < proc->params_len - 1; index++)
                     scm_env_add_binding(apply_env, (scm_symbol *) proc->params[index], argv[index]);
                 scm_env_add_binding(apply_env, (scm_symbol *)proc->params[index],
                     scm_build_list(argc - index, argv + index));
-            } else { // 'x
+            } else {
                 scm_env_add_binding(apply_env, (scm_symbol *)proc->params[0], scm_build_list(argc, argv));
             }
         }
         // 将创建该过程时的环境作为外围环境
-        // TODO: high efficient!
-        scm_env *base_env = apply_env;
-        while (base_env->rest)
-            base_env = base_env->rest;
-        base_env->rest = proc->env;
+        apply_env->parent = proc->env;
 
         return apply_env;
-    } else { // '()
+    } else {
         return proc->env;
     }
 }
