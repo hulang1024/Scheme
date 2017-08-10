@@ -52,27 +52,6 @@
 
 
 ;;; math
-
-(define (zero? z)
-  (= z 0))
-
-(define (positive? x)
-  (> x 0))
-
-(define (negative? x)
-  (< x 0))
-
-(define (remainder n d)
-    (if (< n d)
-	n
-	(remainder (- n d) d)))
-
-(define (odd? z)
-  (not (= (remainder z 2) 0)))
-
-(define (even? z)
-  (= (remainder z 2) 0))
-
 (define (square x)
   (* x x))
 
