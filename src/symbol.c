@@ -33,7 +33,7 @@ static int symbol_hash(void *s)
 
 void scm_init_symbol(scm_env *env)
 {
-    symbols = hashtable_new(100, symbol_equal, symbol_hash);
+    symbols = hashtable_new(1024, symbol_equal, symbol_hash);
 
     scm_quote_symbol = scm_get_intern_symbol("quote");
     scm_dot_symbol = scm_get_intern_symbol(".");
@@ -54,7 +54,6 @@ void scm_init_symbol(scm_env *env)
     scm_do_symbol = scm_get_intern_symbol("do");
     scm_while_symbol = scm_get_intern_symbol("while");
     scm_for_symbol = scm_get_intern_symbol("for");
-
 
     scm_plus_symbol = scm_get_intern_symbol("+");
     scm_minus_symbol = scm_get_intern_symbol("-");
