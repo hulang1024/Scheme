@@ -4,23 +4,23 @@
  
 #include "hashtable.h"
 
-typedef struct {
+struct hashtable_entry {
     void *key;
     void *val;
-} hashtable_entry;
+};
 
-typedef struct {
+struct hashtable {
     int size;
     int count;
     hashtable_entry *array;
     
     hashtable_key_equal_fn key_cmp_fn;
     hashtable_hash_fn hash_fn;
-} hashtable;
+};
 
 static void reset(hashtable *ht, int resize)
 {
-    ht->size = size;
+    ht->size = resize;
     ht->count = 0;
     
     ht->array = malloc(ht->size * sizeof(hashtable_entry));
@@ -50,6 +50,7 @@ hashtable* hashtable_new(int size, hashtable_key_equal_fn key_equal_fn, hashtabl
     ht->hash_fn = hash_fn;
 
     reset(ht, size);
+ 
     return ht;
 }
 
