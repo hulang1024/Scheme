@@ -1,7 +1,4 @@
-/*
- * 哈希表,为实现Scheme环境中项目快速访问. 但有一定的通用性.
- */
- 
+#include <stdlib.h>
 #include "hashtable.h"
 
 struct hashtable_entry {
@@ -14,7 +11,7 @@ struct hashtable {
     int count;
     hashtable_entry *array;
     
-    hashtable_key_equal_fn key_cmp_fn;
+    hashtable_key_equal_fn key_equal_fn;
     hashtable_hash_fn hash_fn;
 };
 
@@ -23,19 +20,19 @@ static void reset(hashtable *ht, int resize)
     ht->size = resize;
     ht->count = 0;
     
-    ht->array = malloc(ht->size * sizeof(hashtable_entry));
+    ht->array = (hashtable_entry *)malloc(ht->size * sizeof(hashtable_entry));
     int i;
-    for (i = 0; i < size; i++)
+    for (i = 0; i < resize; i++)
         ht->array[i].key = NULL;
 }
 
 static void grow(hashtable *ht)
 {
-    entry *old = ht->array;
+    hashtable_entry *old = ht->array;
     int oldsize = ht->size;
     int i;
     
-    resize(ht, size * 2);
+    reset(ht, oldsize * 2);
     
     for (i = 0; i < oldsize; i++) {
         if (old[i].key)
@@ -78,16 +75,16 @@ void hashtable_set(hashtable *ht, void *key, void *val)
         grow(ht);
 }
 
-void* hashtable_get(hashtable *, void *key)
+void* hashtable_get(hashtable *ht, void *key)
 {
     int i = ht->hash_fn(key) % ht->size;
     
     while (1) {
         if (!ht->array[i].key)
             return NULL;
-        if (ht->key_equal_fn(fn->array[i].key, key))
+        if (ht->key_equal_fn(ht->array[i].key, key))
             return ht->array[i].val;
-        n = (n + 1) % ht->size;
+        i = (i + 1) % ht->size;
     }
 }
 
