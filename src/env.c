@@ -11,8 +11,10 @@
 #include "fun.h"
 #include "eval.h"
 #include "system.h"
-#include "hashtable.h"
 #include "lib/builtinlib.h"
+
+#define SCM_SAME_SYMBOL(a, b) SAME_PTR(a, b)
+#define SCM_SYMBOL_HASH(sym) ((int)sym)
 
 int symbol_equal(void *x, void *y)
 {
@@ -21,31 +23,18 @@ int symbol_equal(void *x, void *y)
 
 int symbol_hash(void *sym)
 {
-    /*
-    int ret = 0;
-    char *sc = SCM_SYMBOL_STR_VAL(sym);
-    while(*sc++) {
-        ret *= 10;
-        r += *sc;
-    }
-    
-    if (ret < 0) ret = -ret;
-    
-    return ret;
-    */
-    
     return SCM_SYMBOL_HASH(sym);
 }
 
 scm_env* scm_basic_env()
 {
-    scm_env *env = scm_env_new_frame(120);
+    scm_env *env = scm_env_new_frame(120, NULL);
 
+    scm_init_symbol(env);
     scm_init_bool(env);
     scm_init_char(env);
     scm_init_string(env);
     scm_init_number(env);
-    scm_init_symbol(env);
     scm_init_list(env);
     scm_init_vector(env);
     scm_init_port(env);
@@ -60,11 +49,11 @@ scm_env* scm_basic_env()
     return env;
 }
 
-scm_env* scm_env_new_frame(int size)
+scm_env* scm_env_new_frame(int size, scm_env *parent)
 {
     scm_env *env = (scm_env *)scm_malloc_object(sizeof(scm_env));
     env->bindings = hashtable_new(size, symbol_equal, symbol_hash);
-    env->parent = NULL;
+    env->parent = parent;
     
     return env;
 }
@@ -74,20 +63,32 @@ void scm_env_add_binding(scm_env *env, scm_symbol *id, scm_object *val)
     hashtable_set(env->bindings, id, val);
 }
 
-void scm_env_set_binding(scm_env *env, scm_symbol *id, scm_object *val)
+int scm_env_update_binding(scm_env *env, scm_symbol *id, scm_object *val)
 {
-    hashtable_set(env->bindings, id, val);
+    scm_env *set_env = env;
+
+    while (hashtable_get(set_env->bindings, id) == NULL) {
+        set_env = set_env->parent;
+        if (set_env == NULL) {
+            return 1;
+        }
+    }
+
+    hashtable_set(set_env->bindings, id, val);
+
+    return 0;
 }
 
-scm_env_entry* scm_env_lookup(scm_env *env, scm_symbol *id)
+scm_object* scm_env_lookup(scm_env *env, scm_symbol *id)
 {
     scm_object *obj = NULL;
     scm_env *parent = env;
     
-    while (((obj = hashtable_get(parent->bindings, id)) == NULL))
+    while (((obj = hashtable_get(parent->bindings, id)) == NULL)) {
         parent = parent->parent;
-        if (parent == NULL)
-            break;
+        if (parent == NULL) {
+            return NULL;
+        }
     }
     
     return obj;
