@@ -1,7 +1,7 @@
 ﻿#ifndef SCM_H
 #define SCM_H
 
-//#define NDEBUG
+#define NDEBUG
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -121,6 +121,7 @@ typedef struct {
 
 #define SCM_INTEGERP(o) SCM_SAME_TYPE(SCM_TYPE(o), scm_integer_type)
 #define SCM_FLOATP(o) SCM_SAME_TYPE(SCM_TYPE(o), scm_float_type)
+#define SCM_NUMBERP(o) (SCM_INTEGERP(o) || SCM_FLOATP(o))
 
 #define SCM_FALSEP(o) SAME_OBJ(o, scm_false)
 #define SCM_TRUEP(o) (!SCM_FALSEP(o))
