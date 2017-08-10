@@ -1,3 +1,4 @@
+
 ; 定义地图的尺寸及坐标(均使用双字符长度)
 (define MAP_WIDTH  24)
 (define MAP_HEIGHT 16)
@@ -90,25 +91,26 @@
       ((= snakeDir DIR_DOWN) (set! hy (+ hy 1)))
       ((= snakeDir DIR_LEFT) (set! hx (- hx 1)))
       ((= snakeDir DIR_RIGHT) (set! hx (+ hx 1))))
-    (cond
-      ((or (< hx 0) (>= hx MAP_WIDTH) (< hy 0) (>= hy MAP_HEIGHT) (isInSnake hx hy))
-       (set! isOver #t))
-      ((and (= hx (point2d-x myFood)) (= hy (point2d-y myFood)))
-       (set! snakeLength (+ snakeLength 1))
-       (set! isFood #f))
-      (else
-        (drawBlock (point2d-x (vector-ref mySnake (- snakeLength 1)))
-                   (point2d-y (vector-ref mySnake (- snakeLength 1)))
-                   BS_SPACE)
-        (let ((i (- snakeLength 1)))
-          (while (>= i 0)
-            (point2d-set-x! (vector-ref mySnake (+ i 1)) (point2d-x (vector-ref mySnake i)))
-            (point2d-set-y! (vector-ref mySnake (+ i 1)) (point2d-y (vector-ref mySnake i)))
-            (set! i (- i 1))))
-        (point2d-set-x! (vector-ref mySnake 0) hx)
-        (point2d-set-y! (vector-ref mySnake 0) hy)
-        (drawSnake)))))
 
+      (if (or (< hx 0) (>= hx MAP_WIDTH) (< hy 0) (>= hy MAP_HEIGHT) (isInSnake hx hy))
+          (set! isOver #t)
+          
+          (begin
+            (if (and (= hx (point2d-x myFood)) (= hy (point2d-y myFood)))
+                (begin
+                  (set! snakeLength (+ snakeLength 1))
+                  (set! isFood #f))
+                (drawBlock (point2d-x (vector-ref mySnake (- snakeLength 1)))
+                           (point2d-y (vector-ref mySnake (- snakeLength 1)))
+                           BS_SPACE))
+            (let ((i (- snakeLength 1)))
+              (while (>= i 0)
+                (point2d-set-x! (vector-ref mySnake (+ i 1)) (point2d-x (vector-ref mySnake i)))
+                (point2d-set-y! (vector-ref mySnake (+ i 1)) (point2d-y (vector-ref mySnake i)))
+                (set! i (- i 1))))
+            (point2d-set-x! (vector-ref mySnake 0) hx)
+            (point2d-set-y! (vector-ref mySnake 0) hy)
+            (drawSnake)))))
 
 (define (isInSnake x y)
   (define b #f)
@@ -119,10 +121,6 @@
   b)
 
 (define (drawFood)
-  (define (remainder n d)
-    (if (< n d)
-	n
-	(remainder (- n d) d)))
   (define x 0)
   (define y 0)
   (define (randFood)
@@ -149,11 +147,12 @@
   (drawSnake)
   
   (while (not isOver)
-  
+
     (when (not isPause)
       (moveSnake)
       (if (not isFood)
         (drawFood)))
+
     (pcc-delayMS (- 200 (* snakeLength 2)))
 
     (if (pcc-jkHasKey)
@@ -172,7 +171,8 @@
            (if (not (= snakeDir DIR_LEFT))
              (set! snakeDir DIR_RIGHT)))
           ((memv key (list pcc-JK_ESC pcc-JK_ENTER pcc-JK_SPACE))
-           (set! isPause (not isPause)))))))
+           (set! isPause (not isPause)))
+          (else (pcc-simpleRing 300 100))))))
             
   (pcc-gotoTextPos (+ (/ (+ MAP_BASE_X MAP_WIDTH) 2) 2) (/ (+ MAP_BASE_Y MAP_HEIGHT) 2))
   (pcc-setTextColor pcc-YELLOW)
