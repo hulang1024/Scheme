@@ -20,6 +20,7 @@ static const char *help_info = "\n"
 
 static scm_object* load_prim(int, scm_object *[]);
 static scm_object* time_prim(int, scm_object *[]);
+static scm_object* clock_prim(int, scm_object *[]);
 static scm_object* rand_prim(int, scm_object *[]);
 static scm_object* help_prim(int, scm_object *[]);
 static scm_object* exit_prim(int, scm_object *[]);
@@ -45,6 +46,7 @@ void scm_init_system(scm_env *env)
     scm_add_prim(env, "load", load_prim, 1, 1);
 
     scm_add_prim(env, "time", time_prim, 0, 0);
+    scm_add_prim(env, "clock", clock_prim, 0, 0);
     scm_add_prim(env, "rand", rand_prim, 0, 0);
 
     scm_add_prim(env, "?", help_prim, 0, 0);
@@ -104,6 +106,11 @@ static scm_object* load_prim(int argc, scm_object *argv[])
 static scm_object* time_prim(int argc, scm_object *argv[])
 {
     return scm_make_integer(time(NULL));
+}
+
+static scm_object* clock_prim(int argc, scm_object *argv[])
+{
+    return scm_make_integer(clock());
 }
 
 static scm_object* rand_prim(int argc, scm_object *argv[])
