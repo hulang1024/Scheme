@@ -3,9 +3,6 @@
 
 #include "scm.h"
 
-#defien SCM_SAME_SYMBOL(a, b) SAME_PTR(a, b)
-#define SCM_SYMBOL_HASH(sym) ((int)sym)
-
 scm_symbol *scm_quote_symbol;
 scm_symbol *scm_dot_symbol;
 scm_symbol *scm_if_symbol;
