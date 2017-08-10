@@ -11,12 +11,35 @@
 #include "fun.h"
 #include "eval.h"
 #include "system.h"
+#include "hashtable.h"
 #include "lib/builtinlib.h"
+
+int symbol_equal(void *x, void *y)
+{
+    return SCM_SAME_SYMBOL(x, y);
+}
+
+int symbol_hash(void *sym)
+{
+    /*
+    int ret = 0;
+    char *sc = SCM_SYMBOL_STR_VAL(sym);
+    while(*sc++) {
+        ret *= 10;
+        r += *sc;
+    }
+    
+    if (ret < 0) ret = -ret;
+    
+    return ret;
+    */
+    
+    return SCM_SYMBOL_HASH(sym);
+}
 
 scm_env* scm_basic_env()
 {
-    scm_env *env = (scm_env *)scm_malloc_object(sizeof(scm_env));
-    env->rest = NULL;
+    scm_env *env = scm_env_new_frame(120);
 
     scm_init_bool(env);
     scm_init_char(env);
@@ -34,32 +57,40 @@ scm_env* scm_basic_env()
 
     scm_init_builtin_lib(env);
 
+    return env;
+}
 
+scm_env* scm_env_new_frame(int size)
+{
+    scm_env *env = (scm_env *)scm_malloc_object(sizeof(scm_env));
+    env->bindings = hashtable_new(size, symbol_equal, symbol_hash);
+    env->parent = NULL;
+    
     return env;
 }
 
 void scm_env_add_binding(scm_env *env, scm_symbol *id, scm_object *val)
 {
-    // TODO: high efficient!
-    while (env->rest) {
-        env = env->rest;
-    }
+    hashtable_set(env->bindings, id, val);
+}
 
-    env->rest = (scm_env *)scm_malloc_object(sizeof(scm_env));
-    env->id = id;
-    env->val = val;
-    env->rest->rest = NULL;
+void scm_env_set_binding(scm_env *env, scm_symbol *id, scm_object *val)
+{
+    hashtable_set(env->bindings, id, val);
 }
 
 scm_env_entry* scm_env_lookup(scm_env *env, scm_symbol *id)
 {
-    // TODO: high efficient!
-    while (env) {
-        if (SAME_PTR(env->id, id))
-            return env;
-        env = env->rest;
+    scm_object *obj = NULL;
+    scm_env *parent = env;
+    
+    while (((obj = hashtable_get(parent->bindings, id)) == NULL))
+        parent = parent->parent;
+        if (parent == NULL)
+            break;
     }
-    return NULL;
+    
+    return obj;
 }
 
 void scm_add_prim(scm_env *env, const char *name, scm_prim prim, int min_arity, int max_arity)
