@@ -1,19 +1,19 @@
 ; 定义地图的尺寸及坐标(均使用双字符长度)
-(define MAP_WIDTH    24)
-(define MAP_HEIGHT   16)
-(define MAP_BASE_X   1)
-(define MAP_BASE_Y   1)
+(define MAP_WIDTH  24)
+(define MAP_HEIGHT 16)
+(define MAP_BASE_X 1)
+(define MAP_BASE_Y 1)
 
 ; 定义蛇的相关参数
-(define SNAKE_MIN_LEN   5)
+(define SNAKE_MIN_LEN 5)
 (define SNAKE_MAX_LEN (* MAP_WIDTH MAP_HEIGHT))
 
 ; 定义地图块的状态,分别为[空格|蛇头|蛇身|食物]
-(define BS_SPACE     0)
-(define BS_SHEAD     1)
-(define BS_SBODY     2)
-(define BS_STAIL     3)
-(define BS_FOOD      4)
+(define BS_SPACE 0)
+(define BS_SHEAD 1)
+(define BS_SBODY 2)
+(define BS_STAIL 3)
+(define BS_FOOD  4)
 
 ; 定义各对象的颜色,颜色定义详见[pcc32.h],顺序同上.
 (define myColors (vector pcc-CYAN pcc-MAGENTA pcc-RED pcc-GREEN pcc-YELLOW))
@@ -97,7 +97,9 @@
        (set! snakeLength (+ snakeLength 1))
        (set! isFood #f))
       (else
-        (drawBlock (point2d-x (vector-ref mySnake (- snakeLength 1))) (point2d-y (vector-ref mySnake (- snakeLength 1))) BS_SPACE)
+        (drawBlock (point2d-x (vector-ref mySnake (- snakeLength 1)))
+                   (point2d-y (vector-ref mySnake (- snakeLength 1)))
+                   BS_SPACE)
         (let ((i (- snakeLength 1)))
           (while (>= i 0)
             (point2d-set-x! (vector-ref mySnake (+ i 1)) (point2d-x (vector-ref mySnake i)))
@@ -170,7 +172,7 @@
            (if (not (= snakeDir DIR_LEFT))
              (set! snakeDir DIR_RIGHT)))
           ((memv key (list pcc-JK_ESC pcc-JK_ENTER pcc-JK_SPACE))
-            (set! isPause (not isPause)))))))
+           (set! isPause (not isPause)))))))
             
   (pcc-gotoTextPos (+ (/ (+ MAP_BASE_X MAP_WIDTH) 2) 2) (/ (+ MAP_BASE_Y MAP_HEIGHT) 2))
   (pcc-setTextColor pcc-YELLOW)
