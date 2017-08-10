@@ -28,7 +28,7 @@ Scheme编程语言的解释器。
         `eq?`,`equal?`
     + 数值运算和数值输入/输出  
         `number?`,`=`,`<`,`<`,`>`,`<=`,`>=`,`+`,`*`,`-`,`/`,  
-        `zero?`,`positive?`,`negative?`,`odd?`,`even?`,`abs`,`remainder`  
+        `zero?`,`positive?`,`negative?`,`odd?`,`even?`,`abs`,`remainder`,`modulo`
        1. 整数: `integer?`
        2. 实数: `real?`
     + 布尔  
@@ -36,7 +36,7 @@ Scheme编程语言的解释器。
     + 序对和表  
         `pair?`,`null?`,`list?`,`cons`,`car`,`cdr`,`set-car!`,`set-cdr!`,  
         `caar`,`cadr` `...` `cdddar`,`cddddr` (`car`和`cdr`的组合,默认定义到第四层),  
-        `list`,`length`,`memq`,`memv`,`member`
+        `list`,`length`,`memq`,`memv`,`member`,`list-tail`,`list-ref`,`append`,`reverse`
     + 符号  
         `symbol?`
     + 字符  
@@ -58,7 +58,7 @@ Scheme编程语言的解释器。
     + 输入/输出  
         `read`,`write`,`newline`,`display`
     + 系统接口  
-        `load`,`time`,`rand`,`?`,`exit`,`set`
+        `load`,`time`,`clock`,`rand`,`?`,`exit`,`set`
 * 注释  
   单行注释: `; ...`  
 
