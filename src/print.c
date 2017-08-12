@@ -135,7 +135,8 @@ static void write(scm_object *port, scm_object *obj, int notdisplay)
             fprintf(f, "#<procedure:%s>", ((scm_primitive_proc *)obj)->name);
             break;
         case scm_compound_type:
-            fprintf(f, "#<procedure:%s>", ((scm_compound_proc *)obj)->name);
+            fprintf(f, "#<procedure:%s>",
+                ((scm_compound_proc *)obj)->name ? ((scm_compound_proc *)obj)->name : "");
             break;
         case scm_namespace_type:
             fprintf(f, "#<namespace>");
