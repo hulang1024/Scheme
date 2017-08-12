@@ -21,7 +21,7 @@ static int symbol_hash(void *s)
 {
     int ret = 0;
     char *sc = s;
-    while(*sc) {
+    while (*sc) {
         ret *= 10;
         ret += *sc++;
     }
