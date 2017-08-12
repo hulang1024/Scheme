@@ -234,7 +234,7 @@ static scm_object* eval_lambda(scm_object *exp, scm_env *env)
     // make compound procedure
     scm_compound_proc *proc = (scm_compound_proc *)scm_malloc_object(sizeof(scm_compound_proc));
     ((scm_object *)proc)->type = scm_compound_type;
-    proc->name = "";
+    proc->name = NULL;
     proc->body = scm_lambda_body(exp);
     proc->env = env;
 
@@ -282,7 +282,7 @@ static scm_object* eval_definition(scm_object *exp, scm_env *env)
 {
     scm_symbol *id = scm_definition_var(exp);
     scm_object *val = eval(scm_definition_val(exp), env);
-    if (SCM_COMPROCP(val))
+    if (SCM_COMPROCP(val) && !((scm_compound_proc *)val)->name)
         ((scm_compound_proc *)val)->name = SCM_SYMBOL_STR_VAL(id);
     
     scm_env_add_binding(env, id, val);
