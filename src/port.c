@@ -58,7 +58,6 @@ static int file_ungetc(scm_input_port *, int);
 static int file_putc(scm_output_port *, int);
 static int file_write_cstr(scm_output_port *, const char *);
 /* char-string */
-/* file */
 static int char_string_getc(scm_input_port *);
 static int char_string_ungetc(scm_input_port *, int);
 static int char_string_putc(scm_output_port *, int);
