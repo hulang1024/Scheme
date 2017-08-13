@@ -61,40 +61,45 @@ static scm_object* display_prim(int argc, scm_object *argv[])
 
 static void write(scm_object *port, scm_object *obj, int notdisplay)
 {
-    FILE* f = ((scm_output_port *)port)->f;// TODO:
-
     switch (SCM_TYPE(obj)) {
         case scm_true_type:
-            fprintf(f, "#t");
+            scm_write_cstr(port, "#t");
             break;
         case scm_false_type:
-            fprintf(f, "#f");
+            scm_write_cstr(port, "#f");
             break;
-        case scm_integer_type:
-            fprintf(f, "%ld", SCM_INT_VAL(obj));
+        case scm_integer_type: {
+            char s[11] = {0};
+            sprintf(s, "%ld", SCM_INT_VAL(obj));
+            scm_write_cstr(port, s);
             break;
-        case scm_float_type:
-            fprintf(f, "%lf", SCM_FLOAT_VAL(obj));
+        }
+        case scm_float_type: {
+            char s[17] = {0};
+            sprintf(s, "%lf", SCM_FLOAT_VAL(obj));
+            scm_write_cstr(port, s);
             break;
+        }
         case scm_char_type:
             if (notdisplay) {
                 switch (SCM_CHAR_VAL(obj)) {
                     case '\n':
-                        fprintf(f, "#\\newline");
+                        scm_write_cstr(port, "#\\newline");
                         break;
                     case ' ':
-                        fprintf(f, "#\\space");
+                        scm_write_cstr(port, "#\\space");
                         break;
                     default:
-                        fprintf(f, "#\\%c", SCM_CHAR_VAL(obj));
+                        scm_write_cstr(port, "#\\");
+                        scm_putc(port, SCM_CHAR_VAL(obj));
                 }
             } else {
-                fprintf(f, "%c", SCM_CHAR_VAL(obj));
+                scm_putc(port, SCM_CHAR_VAL(obj));
             }
             break;
         case scm_string_type:
             if (notdisplay) {
-                fprintf(f, "\"");
+                scm_write_cstr(port, "\"");
                 char *str = SCM_CHAR_STR_VAL(obj);
                 char *sc;
                 char *ps;
@@ -110,17 +115,17 @@ static void write(scm_object *port, scm_object *obj, int notdisplay)
                         case '\v': ps = "\\v"; break;
                     }
                     if (ps == NULL)
-                        fprintf(f, "%c", *sc);
+                        scm_putc(port, *sc);
                     else
-                        fprintf(f, "%s", ps);
+                        scm_write_cstr(port, ps);
                 }
-                fprintf(f, "\"");
+                scm_write_cstr(port, "\"");
             }
             else
-                fprintf(f, "%s", SCM_CHAR_STR_VAL(obj));
+                scm_write_cstr(port, SCM_CHAR_STR_VAL(obj));
             break;
         case scm_symbol_type:
-            fprintf(f, "%s", SCM_SYMBOL_STR_VAL(obj));
+            scm_write_cstr(port, SCM_SYMBOL_STR_VAL(obj));
             break;
         case scm_pair_type:
             write_list(port, obj, notdisplay);
@@ -129,20 +134,23 @@ static void write(scm_object *port, scm_object *obj, int notdisplay)
             write_vector(port, obj, notdisplay);
             break;  
         case scm_null_type:
-            fprintf(f, "()");
+            scm_write_cstr(port, "()");
             break;
         case scm_primitive_type:
-            fprintf(f, "#<procedure:%s>", ((scm_primitive_proc *)obj)->name);
+            scm_write_cstr(port, "#<procedure:");
+            scm_write_cstr(port,((scm_primitive_proc *)obj)->name);
+            scm_write_cstr(port, ">");
             break;
         case scm_compound_type:
-            fprintf(f, "#<procedure:%s>",
-                ((scm_compound_proc *)obj)->name ? ((scm_compound_proc *)obj)->name : "");
+            scm_write_cstr(port, "#<procedure:");
+            scm_write_cstr(port, ((scm_compound_proc *)obj)->name ? ((scm_compound_proc *)obj)->name : "");
+            scm_write_cstr(port, ">");
             break;
         case scm_namespace_type:
-            fprintf(f, "#<namespace>");
+            scm_write_cstr(port, "#<namespace>");
             break;
         case scm_void_type:
-            fprintf(f, "#<void>");
+            scm_write_cstr(port, "#<void>");
             break;
         default: ;
     }
@@ -150,39 +158,38 @@ static void write(scm_object *port, scm_object *obj, int notdisplay)
 
 static void write_list(scm_object *port, scm_object *list, int notdisplay)
 {
-    FILE* f = ((scm_output_port *)port)->f;// TODO:
 
-    fprintf(f, "(");
+    scm_putc(port, '(');
     while (!SCM_NULLP(list)) {
         if (SCM_PAIRP(list)) {
             write(port, SCM_CAR(list), notdisplay);
             if (!SCM_NULLP(SCM_CDR(list))) {
-                fprintf(f, " ");
+                scm_putc(port, ' ');
                 list = SCM_CDR(list);
             } else {
                 list = scm_null;
             }
         } else {
-            fprintf(f, ". ");
+            scm_putc(port, '.');
+            scm_putc(port, ' ');
             write(port, list, notdisplay);
             list = scm_null;
         }
     }
-    fprintf(f, ")");
+    scm_putc(port, ')');
 }
 
 static void write_vector(scm_object *port, scm_object *vector, int notdisplay)
 {
-    FILE* f = ((scm_output_port *)port)->f;// TODO:
-
-    fprintf(f, "#(");
+    scm_putc(port, '#');
+    scm_putc(port, '(');
     int len = SCM_VECTOR_LEN(vector);
     scm_object **elems = SCM_VECTOR_ELEMS(vector);
     int i;
     for (i = 0; i < len; i++) {
         write(port, elems[i], notdisplay);
         if (i + 1 < len)
-            fprintf(f, " ");
+            scm_putc(port, ' ');
     }
-    fprintf(f, ")");
+    scm_putc(port, ')');
 }

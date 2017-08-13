@@ -27,7 +27,7 @@ static scm_object* read_prim(int, scm_object *[]);
 
 /* c :: int */
 #define isodigit(c) ('0' <= (c) && (c) <= '7')
-#define is_dbcs_lead_byte(c) ((c) < 0 || (c) > 127)
+#define is_dbcs_lead_byte(c) (((c) < 0 && c != EOF) || (c) > 127)
 
 jmp_buf read_error_jmp_buf;
 
