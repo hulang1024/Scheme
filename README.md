@@ -69,6 +69,9 @@ Scheme编程语言的解释器。
 
 ## 用法
 运行`scheme`会开始并给你一个REPL(Read-Eval-Print-Loop)环境。  
+调用`load`加载执行源文件:
+`(load "file1.scm")`  
+
 执行源文件:  
 `scheme file1.scm file2.scm`  
 `--e`选项接收一个代码字符串以执行:  
