@@ -79,5 +79,5 @@ Scheme编程语言的解释器。
 
 
 ## 截图
-[REPL](docs/imgs/repl.gif)  
-[Snake.scm](docs/imgs/snake.gif)
+![REPL](docs/imgs/repl.gif)  
+![Snake.scm](docs/imgs/snake.gif)
