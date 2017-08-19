@@ -67,9 +67,16 @@ Scheme编程语言的解释器。
     + 多行注释: `#| ... |#`  
     + Win32控制台控制 例子见[/tests/pcc32/](tests/pcc32/)
 
+    
 ## 用法
 运行`scheme`会开始并给你一个REPL(Read-Eval-Print-Loop)环境。  
 执行源文件:  
 `scheme file1.scm file2.scm`  
 `--e`选项接收一个代码字符串以执行:  
 `scheme --e "(define x 1) (+ x 2)"`  
+
+
+## 截图
+[REPL](docs/imgs/repl.gif)  
+[Snake.scm](docs/imgs/snake.gif)
+
