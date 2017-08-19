@@ -1,4 +1,3 @@
-
 ; 定义地图的尺寸及坐标(均使用双字符长度)
 (define MAP_WIDTH  24)
 (define MAP_HEIGHT 16)
@@ -16,13 +15,13 @@
 (define BS_STAIL 3)
 (define BS_FOOD  4)
 
-; 定义各对象的颜色,颜色定义详见[pcc32.h],顺序同上.
+; 定义各对象的颜色,顺序同上.
 (define myColors (vector pcc-CYAN pcc-MAGENTA pcc-RED pcc-GREEN pcc-YELLOW))
 
 ; 定义各对象的形状,注意是宽字符[◆◇□●★¤~◎＋],顺序同上.
 (define mySharps (vector "□" "◆" "■" "＋" "★"))
 
-; 定义蛇的运动方向[上|下|左|右]
+; 定义蛇的运动方向(上|下|左|右]
 (define DIR_UP    1)
 (define DIR_DOWN  2)
 (define DIR_LEFT  3)
@@ -47,32 +46,32 @@
     (vector-set! mySnake i (point2d-new 0 0)))
   (set! snakeLength SNAKE_MIN_LEN)
   (for i in (0 to snakeLength)
-    (point2d-set-x! [vector-ref mySnake i] (- 10 i))
-    (point2d-set-y! [vector-ref mySnake i] 3)))
+    (point2d-set-x! (vector-ref mySnake i) (- 10 i))
+    (point2d-set-y! (vector-ref mySnake i) 3)))
     
 (define (drawSnake)
-  (pcc-setTextColor [vector-ref myColors BS_SHEAD])
-  (pcc-gotoTextPos (* (+ MAP_BASE_X (point2d-x [vector-ref mySnake 0])) 2)
-                   (+ MAP_BASE_Y (point2d-y [vector-ref mySnake 0])))
+  (pcc-setTextColor (vector-ref myColors BS_SHEAD))
+  (pcc-gotoTextPos (* (+ MAP_BASE_X (point2d-x (vector-ref mySnake 0))) 2)
+                   (+ MAP_BASE_Y (point2d-y (vector-ref mySnake 0))))
   (display (vector-ref mySharps BS_SHEAD))
   
   (pcc-setTextColor (vector-ref myColors BS_SBODY))
   (for i in (1 to (- snakeLength 1))
-    (pcc-gotoTextPos (* (+ MAP_BASE_X (point2d-x [vector-ref mySnake i])) 2)
-                        (+ MAP_BASE_Y (point2d-y [vector-ref mySnake i])))
+    (pcc-gotoTextPos (* (+ MAP_BASE_X (point2d-x (vector-ref mySnake i))) 2)
+                        (+ MAP_BASE_Y (point2d-y (vector-ref mySnake i))))
     (display (vector-ref mySharps BS_SBODY)))
     
   (pcc-setTextColor (vector-ref myColors BS_STAIL))
-  (pcc-gotoTextPos (* (+ MAP_BASE_X (point2d-x [vector-ref mySnake (- snakeLength 1)])) 2)
-                   (+ MAP_BASE_Y (point2d-y [vector-ref mySnake (- snakeLength 1)])))
+  (pcc-gotoTextPos (* (+ MAP_BASE_X (point2d-x (vector-ref mySnake (- snakeLength 1)))) 2)
+                   (+ MAP_BASE_Y (point2d-y (vector-ref mySnake (- snakeLength 1)))))
   (display (vector-ref mySharps BS_STAIL)))
   
 (define (drawMap)
-  (pcc-setTextColor [vector-ref myColors BS_SPACE])
+  (pcc-setTextColor (vector-ref myColors BS_SPACE))
   (for i in (0 to MAP_HEIGHT)
     (pcc-gotoTextPos (* MAP_BASE_X 2) (+ MAP_BASE_Y i))
     (for j in (0 to MAP_WIDTH)
-      (display [vector-ref mySharps BS_SPACE]))))
+      (display (vector-ref mySharps BS_SPACE)))))
   
   
 (define (drawBlock x y bs)
@@ -147,7 +146,6 @@
   (drawSnake)
   
   (while (not isOver)
-
     (when (not isPause)
       (moveSnake)
       (if (not isFood)
