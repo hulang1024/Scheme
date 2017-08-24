@@ -7,7 +7,7 @@
 #include "env.h"
 #include "error.h"
 
-scm_object scm_empty_string[0];
+scm_object scm_empty_string[1];
 
 static scm_object* string_p_prim(int, scm_object *[]);
 static scm_object* make_string_prim(int, scm_object *[]);
