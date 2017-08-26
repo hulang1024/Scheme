@@ -1,3 +1,16 @@
+(define (cost-eval exp)
+  (let [[ret #f] [t (clock)]]
+    (set! ret (eval exp))
+    (set! t (- (clock) t))
+    (display "result: ")
+    (display ret)
+    (display "\n")
+    (display "elapse: ")
+    (display t)
+    (display " ms")
+    (display "\n")
+    t))
+        
 (define (rand-list n)
   (let loop [[i 0] [l '()]]
     (if (>= i n) l
