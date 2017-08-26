@@ -98,15 +98,26 @@ scm_object* scm_make_char_string_output_port(int size)
     return port;
 }
 
-scm_object* scm_make_char_string_input_port(const char *s, int size)
+scm_object* scm_make_char_string_input_port(const char *str, int size)
 {
     scm_object *port = scm_malloc_object(sizeof(scm_char_string_input_port));
     port->type = scm_input_port_type;
 
-    size = size > -1 ? size + 1: 20;
-    ((scm_char_string_input_port *)port)->size = size;
+    size = size > -1 ? size + 1: 100;
     CHAR_STRING_INPUT_PORT_BUF(port) = calloc(size, sizeof(char));
-    strcpy(CHAR_STRING_INPUT_PORT_BUF(port), s);
+    char *buf = CHAR_STRING_INPUT_PORT_BUF(port);
+    const char *sc = str;
+    while (*sc) {
+        *buf++ = *sc++;
+        if (sc - str >= size) {
+            size += 10;
+            CHAR_STRING_INPUT_PORT_BUF(port) = realloc(CHAR_STRING_INPUT_PORT_BUF(port), size);
+            assert(CHAR_STRING_INPUT_PORT_BUF(port));
+            memset(buf, 0, 10);
+        }
+    }
+
+    ((scm_char_string_input_port *)port)->size = size;
     ((scm_char_string_input_port *)port)->cnt = 0;
 
     INPUT_PORT_GETC_FUNC(port) = char_string_getc;
