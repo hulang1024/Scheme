@@ -28,6 +28,12 @@ void repl()
     }
 }
 
+void eval_src_string(char *src) {
+    scm_object *val = scm_eval_src_string(src);
+    if (val)
+        scm_write(scm_stdout_port, val);
+}
+
 int main(int argc, char *argv[])
 {
     scm_init();
@@ -37,16 +43,7 @@ int main(int argc, char *argv[])
     } else if (argc > 1) {
         if (strcmp(argv[1], "--e") == 0) {
             if (argc > 2) {
-                // eval code
-                scm_object *port = scm_make_char_string_input_port(argv[2], -1);
-                scm_object *exp, *val;
-                exp = scm_read(port);
-                if (!exp)
-                    return -1;
-                val = scm_eval(exp);
-                if (!val)
-                    return -1;
-                scm_write(scm_stdout_port, val);
+                eval_src_string(argv[2]);
             }
         } else {
             // load files
