@@ -40,40 +40,18 @@
 
 
 ;;; write
-(define (newline)
-  (display "\n"))
-  
+(define (newline) (display "\n"))
 (define print display)
-
-(define (println obj)
-  (display obj)
-  (newline))
+(define (println obj) (display obj)(newline))
   
-
-
 ;;; math
-(define (square x)
-  (* x x))
-
-(define (cube x)
-  (* x x x))
-
-(define (inc x)
-  (+ x 1))
-
-(define (dec x)
-  (- x 1))
-
-(define (abs x)
-  (if (> x 0) x (- x)))
-
-(define max
-  (lambda (x y)
-    (if (> x y) x y)))
-
-(define min
-  (lambda (x y)
-    (if (< x y) x y)))
+(define (square x) (* x x))
+(define (cube x)(* x x x))
+(define (inc x) (+ x 1))
+(define (dec x) (- x 1))
+(define (abs x) (if (> x 0) x (- x)))
+(define max (lambda (x y) (if (> x y) x y)))
+(define min (lambda (x y) (if (< x y) x y)))
 
 (define (expt b n)
   (define (expt-iter b counter product)
@@ -84,10 +62,7 @@
                    (* b product))))
   (expt-iter b n 1))
  
- (define (gcd a b)
-    (if (= b 0)
-	a
-	(gcd b (remainder a b))))
+(define (gcd a b) (if (= b 0) a (gcd b (remainder a b))))
  
  
 
@@ -114,17 +89,16 @@
 
 
 (define subst
-    (lambda (new old slist)
-      (if (null? slist)
-        '()
-        (cons
-	       (subst-in-s-exp new old (car slist)) 
-	       (subst new old (cdr slist))))))
+  (lambda (new old slist)
+    (if (null? slist)
+      '()
+       (cons
+	     (subst-in-s-exp new old (car slist)) 
+	     (subst new old (cdr slist))))))
 
 (define subst-in-s-exp
-    (lambda (new old sexp)
-      (cond ((symbol? sexp)
-             (if (eqv? sexp old) new sexp))
-            ((pair? sexp)
-             (subst new old sexp))
-            (else sexp))))
+  (lambda (new old sexp)
+    (cond ((symbol? sexp)
+          (if (eqv? sexp old) new sexp))
+          ((pair? sexp) (subst new old sexp))
+          (else sexp))))
