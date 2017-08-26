@@ -80,7 +80,7 @@ static scm_object* integer_p_prim(int argc, scm_object *argv[])
 
 static scm_object* real_p_prim(int argc, scm_object *argv[])
 {
-    return SCM_BOOL(SCM_INTEGERP(argv[0]) || SCM_FALSEP(argv[0]));
+    return SCM_BOOL(SCM_INTEGERP(argv[0]) || SCM_FLOATP(argv[0]));
 }
 
 static scm_object* zero_p_prim(int argc, scm_object *argv[])
