@@ -6,8 +6,8 @@
 #include "list.h"
 #include "error.h"
 #include "port.h"
+#include "read.h"
 #include "print.h"
-#include "scm.h"
 
 #define EVAL(expr) { exp = expr; goto EVAL; }
 
@@ -19,7 +19,6 @@
         scm_make_app(scm_not_symbol, SCM_LIST1(scm_unless_test(exp))), \
         scm_make_begin(scm_unless_body(exp)))
 
-        
 static scm_object* eval_prim(int, scm_object *[]);
 static scm_object* eval(scm_object *, scm_env *);
 static scm_object* eval_definition(scm_object *, scm_env *);
@@ -37,10 +36,9 @@ static scm_object* do_to_more_prim(scm_object *);
 static scm_object* while_to_more_prim(scm_object *);
 static scm_object* for_to_more_prim(scm_object *);
 
-static scm_env *global_env;
+static scm_env *global_env = NULL;
 
 jmp_buf eval_error_jmp_buf;
-
 
 void scm_init()
 {
@@ -50,6 +48,26 @@ void scm_init()
 void scm_init_eval(scm_env *env)
 {
     scm_add_prim(env, "eval", eval_prim, 1, 2);
+}
+
+scm_object* scm_eval_src_string(char *src)
+{
+    scm_object *port = scm_make_char_string_input_port(src, -1);
+    scm_object *exp, *val;
+    int ch;
+
+    while (!scm_eofp(ch = scm_getc(port))) {
+        scm_ungetc(ch, port);
+        val = NULL;
+        exp = scm_read(port);
+        if (!exp) // 如果遇到错误，中止执行
+            break;
+        val = scm_eval(exp);
+        if (!val) // 同上
+            break;
+    }
+
+    return val;
 }
 
 scm_object* scm_eval(scm_object *exp)

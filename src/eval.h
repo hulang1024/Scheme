@@ -86,5 +86,5 @@ void scm_init();
 void scm_init_eval(scm_env *);
 scm_object* scm_eval(scm_object *);
 scm_object* scm_apply(scm_object *, int, scm_object *[]);
-
+scm_object* scm_eval_src_string(char *);
 #endif //SCHEME_EVAL_H
