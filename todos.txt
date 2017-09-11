@@ -1,9 +1,6 @@
-√1.cond,case
-√2.pcc32
 3.更多list过程和标准过程写为内置，list-ref
 4.优化eval，包括求值参数转换成数组中的算法
 5.ffi
-√6.vector类型
 7.更可读性的https://en.wikipedia.org/wiki/Arity#cite_note-8
 ...
 8.括号不匹配语法错误提示
