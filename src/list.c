@@ -180,6 +180,8 @@ static scm_object* setcdr_prim(int argc, scm_object *argv[])
         return scm_wrong_contract("set-cdr!", "pair?", 0, argc, argv);
 
     SCM_CDR(argv[0]) = argv[1];
+    SCM_PAIR_FLAGS(argv[0]) =
+        SCM_PAIRP(argv[1]) ? SCM_PAIR_FLAGS(argv[1]) : SCM_PAIR_IS_NON_LIST;
     return scm_void;
 }
 
