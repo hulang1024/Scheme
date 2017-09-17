@@ -21,7 +21,7 @@ Scheme编程语言的解释器。
 * 顺序结构: `begin`
 * 迭代结构: `let`,`do`,`while`,`for`
 * 定义: `define`
-* 赋值: `set!`
+* 赋值: `set!`,`inc!`,`dec!`
 
 * 标准过程
     + 相等谓词  
