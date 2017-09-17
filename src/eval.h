@@ -32,7 +32,7 @@
     SCM_CADDR(exp) : scm_make_lambda(SCM_CDADR(exp), SCM_CDDR(exp)))
 #define scm_make_def(var, val) SCM_LIST3((scm_object *)scm_define_symbol, var, val)
 
-#define scm_assignment_var(exp) ((scm_symbol *)SCM_CADR(exp))
+#define scm_assignment_var(exp) SCM_CADR(exp)
 #define scm_assignment_val SCM_CADDR
 
 #define scm_begin_actions SCM_CDR

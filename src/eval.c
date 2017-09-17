@@ -32,6 +32,8 @@ static scm_object* and_to_if(scm_object *);
 static scm_object* or_to_if(scm_object *);
 static scm_object* cond_to_if(scm_object *);
 static scm_object* case_to_cond(scm_object *);
+static scm_object* scm_inc_assign_to_more_prim(scm_object *);
+static scm_object* scm_dec_assign_to_more_prim(scm_object *);
 static scm_object* do_to_more_prim(scm_object *);
 static scm_object* while_to_more_prim(scm_object *);
 static scm_object* for_to_more_prim(scm_object *);
@@ -191,6 +193,12 @@ static scm_object* eval(scm_object *exp, scm_env *env)
                 if (SAME_OBJ(operator, scm_case_symbol)) {
                     EVAL(case_to_cond(exp));
                 }
+                if (SAME_OBJ(operator, scm_inc_assign_symbol)) {
+                    EVAL(scm_inc_assign_to_more_prim(exp));
+                }
+                if (SAME_OBJ(operator, scm_dec_assign_symbol)) {
+                    EVAL(scm_dec_assign_to_more_prim(exp));
+                }
                 if (SAME_OBJ(operator, scm_do_symbol)) {
                     EVAL(do_to_more_prim(exp));
                 }
@@ -310,9 +318,13 @@ static scm_object* eval_definition(scm_object *exp, scm_env *env)
 
 static scm_object* eval_assignment(scm_object *exp, scm_env *env)
 {
-    scm_symbol *id = scm_assignment_var(exp);
-    if (scm_env_update_binding(env, id, eval(scm_assignment_val(exp), env)) != 0) {
-        scm_undefined_identifier(id);
+    scm_object *id = scm_assignment_var(exp);
+    if (!SCM_SYMBOLP(id)) {
+        scm_print_error("set!: bad syntax \n");
+        scm_throw_eval_error();
+    }
+    if (scm_env_update_binding(env, (scm_symbol*)id, eval(scm_assignment_val(exp), env)) != 0) {
+        scm_undefined_identifier((scm_symbol*)id);
     }
     return scm_void;
 }
@@ -532,6 +544,24 @@ static scm_object* case_to_cond(scm_object *exp)
                SCM_LIST1(SCM_LIST2(temp_var, scm_case_key(exp))),
                body);
 }
+
+#define GEN_INCDEC_TRANS(name, fname, op) \
+    static scm_object* name(scm_object *exp) \
+    { \
+        scm_object *var = SCM_CADR(exp); \
+        if (!SCM_SYMBOLP(var)) { \
+            scm_print_error(fname": bad syntax \n"); \
+            scm_throw_eval_error(); \
+        } \
+        return scm_make_begin( \
+            SCM_LIST2( \
+                scm_make_app(scm_assignment_symbol, \
+                    SCM_LIST2(var, \
+                        scm_make_app(op, SCM_LIST2(var, scm_make_integer(1))))), \
+                var)); \
+    }
+GEN_INCDEC_TRANS(scm_inc_assign_to_more_prim, "inc!", scm_plus_symbol);
+GEN_INCDEC_TRANS(scm_dec_assign_to_more_prim, "dec!", scm_minus_symbol);
 
 static scm_object* do_to_more_prim(scm_object *exp)
 {

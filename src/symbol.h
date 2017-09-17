@@ -26,6 +26,9 @@ scm_symbol *scm_do_symbol;
 scm_symbol *scm_while_symbol;
 scm_symbol *scm_for_symbol;
 
+scm_symbol *scm_inc_assign_symbol;
+scm_symbol *scm_dec_assign_symbol;
+
 scm_symbol *scm_plus_symbol;
 scm_symbol *scm_minus_symbol;
 scm_symbol *scm_mul_symbol;

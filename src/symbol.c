@@ -55,6 +55,9 @@ void scm_init_symbol(scm_env *env)
     scm_while_symbol = scm_get_intern_symbol("while");
     scm_for_symbol = scm_get_intern_symbol("for");
 
+    scm_inc_assign_symbol = scm_get_intern_symbol("inc!");
+    scm_dec_assign_symbol = scm_get_intern_symbol("dec!");
+
     scm_plus_symbol = scm_get_intern_symbol("+");
     scm_minus_symbol = scm_get_intern_symbol("-");
     scm_mul_symbol = scm_get_intern_symbol("*");
