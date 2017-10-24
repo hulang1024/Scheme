@@ -12,7 +12,7 @@
 #include "env.h"
 #include "error.h"
 
-scm_object* read(scm_object *);
+static scm_object* read(scm_object *);
 static scm_object* read_char(scm_object *);
 static scm_object* read_string(scm_object *);
 static scm_object* read_number(scm_object *, char, int);
