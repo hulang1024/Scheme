@@ -1,4 +1,4 @@
-﻿# scheme
+# scheme
 
 Scheme编程语言的解释器。  
 
@@ -9,7 +9,8 @@ Scheme编程语言的解释器。
 * 局部变量: `let`
 * 常量引用: `quote`,`'`  
 * 过程调用: `(operator operand ...)`
-* 过程: `lambda`  
+* 过程(函数): `lambda`  
+    + 可变参数  
 * 第一级函数  
 * 静态(词法)作用域
 * 闭包
@@ -65,7 +66,7 @@ Scheme编程语言的解释器。
 * 扩展
     + 中括号`[]`, 大括号`{}`  
     + 多行注释: `#| ... |#`  
-    + Win32控制台控制 例子见[/tests/pcc32/](tests/pcc32/)
+    + Windows32控制台控制 例子见[/tests/](tests/)
 
     
 ## 用法
@@ -79,5 +80,4 @@ Scheme编程语言的解释器。
 
 
 ## 截图
-![REPL](docs/imgs/repl.gif)  
 ![Snake.scm](docs/imgs/snake.gif)
