@@ -63,10 +63,12 @@ Scheme编程语言的解释器。
 * 注释  
   单行注释: `; ...`  
 
-* 扩展
+* 扩展  
     + 中括号`[]`, 大括号`{}`  
     + 多行注释: `#| ... |#`  
-    + Windows32控制台控制 例子见[/tests/](tests/)
+    
+* 内置库  
+    + Windows32 Console Control 例子见[/tests/](tests/)
 
     
 ## 用法
