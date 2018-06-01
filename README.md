@@ -79,5 +79,6 @@ Scheme编程语言的解释器。
 `scheme --e "(define x 1) (+ x 2)"`  
 
 
-## 截图
-![Snake.scm](docs/imgs/snake.gif)
+License
+-------
+MIT
