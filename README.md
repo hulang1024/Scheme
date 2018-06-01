@@ -68,7 +68,7 @@ Scheme编程语言的解释器。
     + 多行注释: `#| ... |#`  
     
 * 内置库  
-    + Windows32 Console Control 例子见[/tests/](tests/)
+    + Windows32 Console Control 例子见[/tests/](https://github.com/hulang1024/Lisp-programs/tree/master/scheme/tests/pcc32)
 
     
 ## 用法
