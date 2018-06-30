@@ -1,14 +1,11 @@
 # scheme
-
-Scheme编程语言的解释器。  
-
+一个Scheme编程语言的解释器，帮助理解编程语言。
 
 ## 特性
-目前的支持:
-* 变量引用: `<variable>`
+* 变量引用
 * 局部变量: `let`
 * 常量引用: `quote`,`'`  
-* 过程调用: `(operator operand ...)`
+* 过程调用
 * 过程(函数): `lambda`  
     + 可变参数  
 * 第一级函数  
@@ -66,11 +63,10 @@ Scheme编程语言的解释器。
 * 扩展  
     + 中括号`[]`, 大括号`{}`  
     + 多行注释: `#| ... |#`  
-    
-* 内置库  
-    + Windows32 Console Control 例子见[/tests/](https://github.com/hulang1024/Lisp-programs/tree/master/scheme/tests/pcc32)
 
-    
+* 内置库  
+    + Windows32 Console Control
+
 ## 用法
 运行`scheme`会开始并给你一个REPL(Read-Eval-Print-Loop)环境。  
 调用`load`加载执行源文件:  
@@ -79,6 +75,8 @@ Scheme编程语言的解释器。
 `scheme file1.scm file2.scm`  
 `--e`选项接收一个代码字符串以执行:  
 `scheme --e "(define x 1) (+ x 2)"`  
+### 例子
+见[/scheme/](https://github.com/hulang1024/Lisp-programs/tree/master/scheme)和[/scheme/tests/pcc32](https://github.com/hulang1024/Lisp-programs/tree/master/scheme/tests/pcc32)
 
 
 License
