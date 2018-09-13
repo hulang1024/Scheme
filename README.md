@@ -1,5 +1,21 @@
 # scheme
-一个Scheme编程语言的解释器，帮助理解编程语言。
+Scheme编程语言的一个解释器。
+
+>解释器决定了一个程序设计语言中各种表达式（和语句）的意义，而它本身也不过就是另一个程序。--《SICP》
+
+虽本解释器是针对Scheme语言，但它已包含（大部分流行的）编程语言的解释器的基本结构，可以帮助建立和认识关于程序执行方式的一种比较精确的模型。
+
+## 用法
+运行`scheme`会开始并给你一个REPL(Read-Eval-Print-Loop)环境。  
+调用`load`加载执行源文件:  
+`(load "file1.scm")`  
+执行源文件:  
+`scheme file1.scm file2.scm`  
+`--e`选项接收一个代码字符串以执行:  
+`scheme --e "(define x 1) (+ x 2)"`  
+### 例子
+见[/scheme/](https://github.com/hulang1024/Lisp-programs/tree/master/scheme)和[/scheme/tests/pcc32](https://github.com/hulang1024/Lisp-programs/tree/master/scheme/tests/pcc32)
+
 
 ## 特性
 * 变量引用
@@ -67,16 +83,10 @@
 * 内置库  
     + Windows32 Console Control
 
-## 用法
-运行`scheme`会开始并给你一个REPL(Read-Eval-Print-Loop)环境。  
-调用`load`加载执行源文件:  
-`(load "file1.scm")`  
-执行源文件:  
-`scheme file1.scm file2.scm`  
-`--e`选项接收一个代码字符串以执行:  
-`scheme --e "(define x 1) (+ x 2)"`  
-### 例子
-见[/scheme/](https://github.com/hulang1024/Lisp-programs/tree/master/scheme)和[/scheme/tests/pcc32](https://github.com/hulang1024/Lisp-programs/tree/master/scheme/tests/pcc32)
+
+Author
+-------
+[hulang1024](https://github.com/hulang1024)
 
 
 License
