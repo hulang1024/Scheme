@@ -14,7 +14,7 @@
 #include "lib/builtinlib.h"
 
 #define SCM_SAME_SYMBOL(a, b) SAME_PTR(a, b)
-#define SCM_SYMBOL_HASH(sym) ((int)sym)
+#define SCM_SYMBOL_HASH(sym) ((intptr_t)sym)
 
 int symbol_equal(void *x, void *y)
 {

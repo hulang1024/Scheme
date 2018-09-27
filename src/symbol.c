@@ -8,7 +8,7 @@
 
 // TODO: hashtable
 static hashtable *symbols = NULL;
-static int gen_sym_id = 0;
+static intptr_t gen_sym_id = 0;
 
 static scm_object* symbol_p_prim(int, scm_object *[]);
 
