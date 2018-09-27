@@ -4,7 +4,7 @@
 #include "print.h"
 #include "eval.h"
 #include <setjmp.h>
-#include "pcc32.h"
+#include "cc/cc.h"
 
 void scm_print_error(const char *info)
 {
@@ -100,7 +100,7 @@ scm_object* scm_undefined_identifier(scm_symbol *id)
     scm_print_error(": undefined;\n cannot reference undefined identifier\n");
 
     scm_throw_eval_error();
-    
+
     return NULL;
 }
 
@@ -139,7 +139,7 @@ scm_object* scm_out_of_range(const char *name, scm_object *obj, int start, int e
         strcat(info, tmp);
 
         sprintf(tmp, "  valid range: [%d, %d]\n  %s: ",
-            0, (isrange ? len : len - 1), type);
+            0, (int)(isrange ? len : len - 1), type);
         strcat(info ,tmp);
         scm_print_error(info);
         scm_write(scm_stdout_port, obj);
@@ -151,6 +151,6 @@ scm_object* scm_out_of_range(const char *name, scm_object *obj, int start, int e
     }
 
     scm_throw_eval_error();
-    
+
     return NULL;
 }

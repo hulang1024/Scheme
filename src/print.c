@@ -3,7 +3,7 @@
 #include "bool.h"
 #include "env.h"
 #include "scm.h"
-#include "pcc32.h"
+#include "cc/cc.h"
 
 #define WRITE_TEXT_COLOR LIGHT_BLUE
 #define DISPLAY_TEXT_COLOR LIGHT_MAGENTA
@@ -17,7 +17,7 @@ static scm_object* write_prim(int, scm_object *[]);
 static scm_object* display_prim(int, scm_object *[]);
 static scm_object* newline_prim(int, scm_object *[]);
 
-static void write(scm_object *port, scm_object *, int);
+static void write_object(scm_object *port, scm_object *, int);
 static void write_list(scm_object *port, scm_object *, int);
 static void write_vector(scm_object *port, scm_object *, int);
 
@@ -32,7 +32,7 @@ void scm_write(scm_object *port, scm_object *obj)
     int oc = getTextColor();
     setTextColor(WRITE_TEXT_COLOR); // 仅交互调用时设置颜色
 
-    write(port, obj, WRITE);
+    write_object(port, obj, WRITE);
 
     setTextColor(oc);
 }
@@ -42,24 +42,24 @@ void scm_display(scm_object *port, scm_object *obj)
     int oc = getTextColor();
     setTextColor(DISPLAY_TEXT_COLOR);
 
-    write(port, obj, DISPLAY);
+    write_object(port, obj, DISPLAY);
 
     setTextColor(oc);
 }
 
 static scm_object* write_prim(int argc, scm_object *argv[])
 {
-    write(scm_stdout_port, argv[0], WRITE);
+    write_object(scm_stdout_port, argv[0], WRITE);
     return scm_void;
 }
 
 static scm_object* display_prim(int argc, scm_object *argv[])
 {
-    write(scm_stdout_port, argv[0], DISPLAY);
+    write_object(scm_stdout_port, argv[0], DISPLAY);
     return scm_void;
 }
 
-static void write(scm_object *port, scm_object *obj, int notdisplay)
+static void write_object(scm_object *port, scm_object *obj, int notdisplay)
 {
     switch (SCM_TYPE(obj)) {
         case scm_true_type:
@@ -132,7 +132,7 @@ static void write(scm_object *port, scm_object *obj, int notdisplay)
             break;
         case scm_vector_type:
             write_vector(port, obj, notdisplay);
-            break;  
+            break;
         case scm_null_type:
             scm_write_cstr(port, "()");
             break;
@@ -162,7 +162,7 @@ static void write_list(scm_object *port, scm_object *list, int notdisplay)
     scm_putc(port, '(');
     while (!SCM_NULLP(list)) {
         if (SCM_PAIRP(list)) {
-            write(port, SCM_CAR(list), notdisplay);
+            write_object(port, SCM_CAR(list), notdisplay);
             if (!SCM_NULLP(SCM_CDR(list))) {
                 scm_putc(port, ' ');
                 list = SCM_CDR(list);
@@ -172,7 +172,7 @@ static void write_list(scm_object *port, scm_object *list, int notdisplay)
         } else {
             scm_putc(port, '.');
             scm_putc(port, ' ');
-            write(port, list, notdisplay);
+            write_object(port, list, notdisplay);
             list = scm_null;
         }
     }
@@ -187,7 +187,7 @@ static void write_vector(scm_object *port, scm_object *vector, int notdisplay)
     scm_object **elems = SCM_VECTOR_ELEMS(vector);
     int i;
     for (i = 0; i < len; i++) {
-        write(port, elems[i], notdisplay);
+        write_object(port, elems[i], notdisplay);
         if (i + 1 < len)
             scm_putc(port, ' ');
     }

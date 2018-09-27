@@ -11,12 +11,12 @@ char *scm_g_repl_prompt = "> ";
 
 void repl()
 {
-    puts("Welcome to Scheme. github.com/hlpp/scheme, (?) for help");
+    puts("Welcome to Scheme. github.com/hulang1024/scheme, (?) for help");
 
     scm_object *exp, *val;
 
     while (1) {
-        printf(scm_g_repl_prompt);
+        printf("%s", scm_g_repl_prompt);
         exp = scm_read(scm_stdin_port);
         if (exp) {
             val = scm_eval(exp);

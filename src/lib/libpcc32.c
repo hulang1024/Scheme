@@ -1,5 +1,5 @@
 ﻿#include "libpcc32.h"
-#include "../pcc32.h"
+#include "../cc/cc.h"
 #include "../bool.h"
 #include "../number.h"
 #include "../symbol.h"

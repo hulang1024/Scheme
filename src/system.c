@@ -146,7 +146,7 @@ static scm_object* set_prim(int argc, scm_object *argv[])
     int ok = 0;
     char *fail_cause = NULL;
 
-    if (stricmp(name, "prompt") == 0) {
+    if (strcmp(name, "prompt") == 0) {
         if (SCM_STRINGP(argv[1])) {
             scm_g_repl_prompt = SCM_CHAR_STR_VAL(argv[1]);
             ok = 1;
@@ -169,7 +169,7 @@ static int get_skip_encoding_marks(scm_object *port)
     int c;
     while (read_bytes < 4 && !scm_eofp(c = scm_getc(port)))
         bytes[read_bytes++] = c;
-    
+
     int encoding = ENCODING_UNKNOWN;
     int unread_bytes = read_bytes;
     /* 处理可能的常见的BOM */

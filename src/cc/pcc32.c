@@ -5,8 +5,8 @@
 * License: Copyleft. Enjoy it Just for fun.             *
 * Date:    2008-12-17 00:28:39                          *
 ********************************************************/
-
-#include "pcc32.h"
+#ifdef _WIN32
+#include "cc.h"
 
 void delayMS(uint32 d)
 {
@@ -248,4 +248,5 @@ int jkHasKey(void)
    return (kbhit());
 }
 
+#endif
 //End of pcc32.c

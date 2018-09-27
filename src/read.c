@@ -221,7 +221,7 @@ static scm_object* read_list(scm_object *port)
     if (!SCM_NULLP(head) && (!found_dot || SCM_NULLP(prev))) {
         SCM_PAIR_FLAGS(head) |= SCM_PAIR_IS_LIST;
     }
-    
+
     return head;
 }
 
@@ -232,17 +232,17 @@ static scm_object* read_vector(scm_object *port)
     scm_object *prev = (scm_object *)&head;
     scm_object *obj;
     int c;
-    
+
     while (1) {
         c = scm_getc(port);
         if (c == ')' || c == ']' || c == '}' || scm_eofp(c)) {
             break;
         }
-        
+
         scm_ungetc(c, port);
         obj = read(port);
         skip_whitespace_comments(port);
-        
+
         SCM_CDR(prev) = SCM_LIST1(obj);
         prev = SCM_CDR(prev);
         len++;
@@ -373,9 +373,9 @@ static scm_object* read_char(scm_object *port)
         c = *buf;
     } else {
         buf[buf_idx] = '\0';
-        if (stricmp(buf, "space") == 0)
+        if (strcmp(buf, "space") == 0)
             c = ' ';
-        else if (stricmp(buf, "newline") == 0)
+        else if (strcmp(buf, "newline") == 0)
             c = '\n';
     }
     return scm_make_char(c);
@@ -426,7 +426,7 @@ static scm_object* read_string(scm_object *port)
         buf[buf_idx++] = c;
     }
     buf[buf_idx] = '\0';
-    
+
     return scm_make_string((const char*)buf, buf_idx);
 }
 

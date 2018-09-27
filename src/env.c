@@ -14,7 +14,7 @@
 #include "lib/builtinlib.h"
 
 #define SCM_SAME_SYMBOL(a, b) SAME_PTR(a, b)
-#define SCM_SYMBOL_HASH(sym) ((intptr_t)sym)
+#define SCM_SYMBOL_HASH(sym) ((int)sym)
 
 int symbol_equal(void *x, void *y)
 {
@@ -54,7 +54,7 @@ scm_env* scm_env_new_frame(int size, scm_env *parent)
     scm_env *env = (scm_env *)scm_malloc_object(sizeof(scm_env));
     env->bindings = hashtable_new(size, symbol_equal, symbol_hash);
     env->parent = parent;
-    
+
     return env;
 }
 
@@ -83,14 +83,14 @@ scm_object* scm_env_lookup(scm_env *env, scm_symbol *id)
 {
     scm_object *obj = NULL;
     scm_env *parent = env;
-    
+
     while (((obj = hashtable_get(parent->bindings, id)) == NULL)) {
         parent = parent->parent;
         if (parent == NULL) {
             return NULL;
         }
     }
-    
+
     return obj;
 }
 

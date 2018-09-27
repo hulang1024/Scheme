@@ -1,27 +1,32 @@
-﻿/********************************************************
-* Author:  RedOC                                        *
-* Email:   RedOC@foxmail.com                            *
-* Notes:   Some functions about Win32 Console Control.  *
-* License: Copyleft. Enjoy it Just for fun.             *
-* Date:    2008-12-17 00:28:39                          *
-********************************************************/
+﻿/**************************************************
+* Author:  HuLang                                 *
+* Notes:   Some functions about Console Control.  *
+* License: Copyleft. Enjoy it Just for fun.       *
+* Date:    2008-12-17 00:28:39                    *
+***************************************************/
 
-#ifndef PCC32_H_INCLUDED
-#define PCC32_H_INCLUDED
+#ifndef CC_H_INCLUDED
+#define CC_H_INCLUDED
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <conio.h>
-#include <windows.h>
+#ifdef _WIN32
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include <conio.h>
+  #include <windows.h>
+#else
+  #include <termios.h>
+  #include <unistd.h>
+  #include <signal.h>
+#endif
 
-#ifndef REDOC_COMMEN_TYPE
-#define REDOC_COMMEN_TYPE
+#ifndef COMMEN_TYPE
+#define COMMEN_TYPE
 
 typedef unsigned char uint8;
 typedef unsigned short uint16;
 typedef unsigned long uint32;
 
-#endif // REDOC_COMMEN_TYPE
+#endif // COMMEN_TYPE
 
 /* 按键定义 */
 #define JK_FUNC_KEY  0x00
@@ -122,7 +127,7 @@ extern "C"
    uint8 getLineWidth(void);
    /* 获取控制台文本行的最大行数 */
    uint8 getLineNum(void);
-    
+
 
    /* 获取光标的横坐标[列数] */
    uint8 getCursorX(void);
@@ -154,4 +159,4 @@ extern "C"
 }
 #endif
 
-#endif // PCC32_H_INCLUDED
+#endif // CC_H_INCLUDED
