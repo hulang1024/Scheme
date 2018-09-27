@@ -4,7 +4,9 @@ CCFLAGS = -std=c99
 SRCS = $(wildcard src/*.c src/lib/*.c)
 OBJS = $(SRCS:.c = .o)
 
-OUTPUT = scheme.exe
+OUTPUT = scheme
+
+
 all: $(OUTPUT)
 
 $(OUTPUT): $(OBJS)
